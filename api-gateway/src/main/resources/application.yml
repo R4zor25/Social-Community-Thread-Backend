@@ -1,0 +1,45 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: thread-service
+          uri: lb://thread-service
+          predicates:
+            - Path=/api/thread/**
+          filters:
+            AuthenticationFilter
+
+        - id: chat-service
+          uri: lb://chat-service
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            AuthenticationFilter
+
+
+        - id: friend-service
+          uri: lb://friend-service
+          predicates:
+            - Path=/api/friend/**
+          filters:
+            AuthenticationFilter
+
+
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            AuthenticationFilter
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

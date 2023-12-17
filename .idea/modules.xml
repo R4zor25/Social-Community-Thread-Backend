@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Dip_Terv.iml" filepath="$PROJECT_DIR$/Dip_Terv.iml" />
+      <module fileurl="file://$PROJECT_DIR$/config_service/config_service.iml" filepath="$PROJECT_DIR$/config_service/config_service.iml" />
+    </modules>
+  </component>
+</project>
