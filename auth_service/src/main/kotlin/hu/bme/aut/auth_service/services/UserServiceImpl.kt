@@ -44,10 +44,6 @@ open class UserServiceImpl(
         return ResponseEntity.ok("User added successfully!")
     }
 
-    override fun generateToken(username: String): String {
-        return jwtService.generateToken(username)
-    }
-
     override fun validateToken(token: String) {
         jwtService.validateToken(token)
     }

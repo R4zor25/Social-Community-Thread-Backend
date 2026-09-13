@@ -6,6 +6,7 @@ import hu.bme.aut.auth_service.services.JwtService
 import hu.bme.aut.auth_service.services.RefreshTokenService
 import hu.bme.aut.auth_service.services.UserService
 import lombok.RequiredArgsConstructor
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -57,10 +58,10 @@ class AuthController(
     fun login(@RequestBody authRequest: AuthRequest): ResponseEntity<Any> {
         val authenticate: Authentication = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(authRequest.username, authRequest.password))
         return if (authenticate.isAuthenticated) {
+            val appUser = userService.findByUsername(authRequest.username)!!
             val refreshToken = refreshTokenService.createRefreshToken(authRequest.username)
-            val accessToken = jwtService.generateToken(authRequest.username)
-            val appUser = userService.findByUsername(authRequest.username)
-            ResponseEntity.ok().body(JwtResponse(accessToken, refreshToken.token, appUser!!))
+            val accessToken = jwtService.generateToken(appUser.userId, appUser.userName)
+            ResponseEntity.ok().body(JwtResponse(accessToken, refreshToken.token, appUser))
         } else {
             return ResponseEntity.status(401).body("Login failed!")
         }
@@ -68,18 +69,15 @@ class AuthController(
 
     @PostMapping("/refreshToken")
     fun refreshToken(@RequestBody refreshTokenRequest: RefreshTokenRequest): ResponseEntity<JwtResponse> {
-        val result = refreshTokenService.findByToken(refreshTokenRequest.token)
-            .map { refreshTokenService.verifyExpiration(it) }
-            .map { it.user }
-            .map {
-                val accessToken = jwtService.generateToken(it.userName)
-                ResponseEntity.ok(JwtResponse().apply {
-                    this.accessToken = accessToken
-                    this.token = refreshTokenRequest.token
-                    this.user = it
-                })
-            }
-        return result.orElseThrow()
+        val refreshToken = refreshTokenService.findByToken(refreshTokenRequest.token).orElse(null)
+            ?.let { refreshTokenService.verifyExpiration(it) }
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        val user = refreshToken.user
+        return ResponseEntity.ok(JwtResponse().apply {
+            this.accessToken = jwtService.generateToken(user.userId, user.userName)
+            this.token = refreshTokenRequest.token
+            this.user = user
+        })
     }
 
     @PostMapping("/validate")

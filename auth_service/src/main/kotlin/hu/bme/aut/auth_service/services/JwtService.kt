@@ -7,28 +7,31 @@ import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.Key
+import java.time.Duration
 import java.util.*
 
 
 @Component
 class JwtService(
-    @Value("\${jwt.secret}") private val secret: String
+    @Value("\${jwt.secret}") private val secret: String,
+    @Value("\${jwt.access-token-ttl}") private val accessTokenTtl: Duration
 ) {
     fun validateToken(token: String?) {
         Jwts.parserBuilder().setSigningKey(signKey).build().parseClaimsJws(token)
     }
 
-    fun generateToken(userName: String): String {
-        val claims: Map<String, Any?> = HashMap()
+    fun generateToken(userId: Long, userName: String): String {
+        val claims: Map<String, Any?> = mapOf("userId" to userId)
         return createToken(claims, userName)
     }
 
     private fun createToken(claims: Map<String, Any?>, userName: String): String {
+        val now = System.currentTimeMillis()
         return Jwts.builder()
             .setClaims(claims)
             .setSubject(userName)
-            .setIssuedAt(Date(System.currentTimeMillis()))
-            .setExpiration(Date(System.currentTimeMillis() + 1000 * 60 * 60 * 60))
+            .setIssuedAt(Date(now))
+            .setExpiration(Date(now + accessTokenTtl.toMillis()))
             .signWith(signKey, SignatureAlgorithm.HS256).compact()
     }
 

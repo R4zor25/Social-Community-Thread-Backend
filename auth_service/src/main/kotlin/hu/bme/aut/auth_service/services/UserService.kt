@@ -13,7 +13,6 @@ interface UserService {
    // fun assignRole(userId: Long, roleRepresentation: RoleRepresentation)
    // fun unassignRole(userId: Long, roleRepresentation: RoleRepresentation)
     fun create(request: UserRequest): ResponseEntity<Any>
-    fun generateToken(username: String) : String
     fun validateToken(token: String)
     fun update(id: Long, appUser: AppUser) : AppUser
 }

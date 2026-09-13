@@ -1,5 +1,6 @@
 package hu.bme.aut.apigateway.util
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -10,15 +11,14 @@ import java.security.Key
 
 @Component
 class JwtUtil(
-    @Value("\${jwt.secret}") private val secret: String
+    @Value("\${jwt.secret}") secret: String
 ) {
-    fun validateToken(token: String?) {
-        Jwts.parserBuilder().setSigningKey(signKey).build().parseClaimsJws(token)
-    }
+    private val signKey: Key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))
 
-    private val signKey: Key
-        private get() {
-            val keyBytes: ByteArray = Decoders.BASE64.decode(secret)
-            return Keys.hmacShaKeyFor(keyBytes)
-        }
+    /**
+     * Verifies signature and expiry. Throws [io.jsonwebtoken.JwtException]
+     * or [IllegalArgumentException] if the token is not acceptable.
+     */
+    fun parseClaims(token: String): Claims =
+        Jwts.parserBuilder().setSigningKey(signKey).build().parseClaimsJws(token).body
 }

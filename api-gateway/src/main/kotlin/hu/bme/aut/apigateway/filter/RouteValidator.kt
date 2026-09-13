@@ -9,17 +9,15 @@ import java.util.function.Predicate
 @Component
 class RouteValidator {
     var isSecured: Predicate<ServerHttpRequest> = Predicate<ServerHttpRequest> { request ->
-        openApiEndpoints
-            .stream()
-            .noneMatch { uri: String? -> request.uri.getPath().contains(uri.toString()) }
+        request.path.value() !in openApiEndpoints
     }
 
     companion object {
-        val openApiEndpoints = listOf(
+        // Exact matches only: anything else, including encoded or suffixed variants, requires a token.
+        val openApiEndpoints = setOf(
             "/api/auth/register",
             "/api/auth/login",
-            "/api/auth/refreshToken",
-            "/eureka"
+            "/api/auth/refreshToken"
         )
     }
 }
