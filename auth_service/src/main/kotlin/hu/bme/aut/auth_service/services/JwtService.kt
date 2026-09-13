@@ -4,13 +4,16 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.Key
 import java.util.*
 
 
 @Component
-class JwtService {
+class JwtService(
+    @Value("\${jwt.secret}") private val secret: String
+) {
     fun validateToken(token: String?) {
         Jwts.parserBuilder().setSigningKey(signKey).build().parseClaimsJws(token)
     }
@@ -31,11 +34,7 @@ class JwtService {
 
     private val signKey: Key
         private get() {
-            val keyBytes = Decoders.BASE64.decode(SECRET)
+            val keyBytes = Decoders.BASE64.decode(secret)
             return Keys.hmacShaKeyFor(keyBytes)
         }
-
-    companion object {
-        const val SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437"
-    }
 }
