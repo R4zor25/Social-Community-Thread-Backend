@@ -15,7 +15,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.util.*
@@ -504,14 +503,14 @@ class ChatControllerTest @Autowired constructor(
             }
 
         val removeUserUrl = "/api/chat/1/removeParticipants"
-        val delete = mockMvc.delete(removeUserUrl) {
+        val remove = mockMvc.post(removeUserUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
             )
         }
 
-        delete.andDo { print() }.andExpect {
+        remove.andDo { print() }.andExpect {
             status { isOk() }
             content {
                 MediaType.APPLICATION_JSON
@@ -553,14 +552,14 @@ class ChatControllerTest @Autowired constructor(
         }
 
         val removeUserUrlConversationNotFound = "/api/chat/2/removeParticipants"
-        val delete = mockMvc.delete(removeUserUrlConversationNotFound) {
+        val remove = mockMvc.post(removeUserUrlConversationNotFound) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
             )
         }
 
-        delete.andDo { print() }.andExpect {
+        remove.andDo { print() }.andExpect {
             status { isNotFound() }
             content {
                 MediaType.APPLICATION_JSON
@@ -568,14 +567,14 @@ class ChatControllerTest @Autowired constructor(
         }
 
         val removeUserUrlUserNotFound = "/api/chat/1/removeParticipants"
-        val delete2 = mockMvc.delete(removeUserUrlUserNotFound) {
+        val remove2 = mockMvc.post(removeUserUrlUserNotFound) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(9L)
             )
         }
 
-        delete2.andDo { print() }.andExpect {
+        remove2.andDo { print() }.andExpect {
             status { isNotFound() }
             content {
                 MediaType.APPLICATION_JSON
