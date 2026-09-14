@@ -230,6 +230,7 @@ class AuthControllerTest @Autowired constructor(
 
         val url = "/api/auth/users"
         val post = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
         post
@@ -267,6 +268,7 @@ class AuthControllerTest @Autowired constructor(
 
         val url = "/api/auth/users/${1L}"
         val post = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
         post
@@ -284,6 +286,7 @@ class AuthControllerTest @Autowired constructor(
     fun findByIdUnsuccessful() {
         val url = "/api/auth/users/${1L}"
         val post = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
         post
@@ -319,6 +322,7 @@ class AuthControllerTest @Autowired constructor(
 
         val url = "/api/auth/users/username/test"
         val post = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
         post
@@ -336,6 +340,7 @@ class AuthControllerTest @Autowired constructor(
     fun findByUsernameUnsuccessful() {
         val url = "/api/auth/users/username/test"
         val post = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
         post

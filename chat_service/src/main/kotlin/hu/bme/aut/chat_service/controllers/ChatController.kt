@@ -1,8 +1,10 @@
 package hu.bme.aut.chat_service.controllers
 
+import hu.bme.aut.chat_service.config.USER_ID_HEADER
 import hu.bme.aut.chat_service.domain.ChatConversation
 import hu.bme.aut.chat_service.domain.ChatMessage
 import hu.bme.aut.chat_service.services.ChatService
+import hu.bme.aut.chat_service.services.ForbiddenException
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity
@@ -31,6 +33,8 @@ class ChatController(
         return try {
             val result = chatService.getMessageDetails(userId, conversationId)
             ResponseEntity.ok(result)
+        } catch (e: ForbiddenException) {
+            ResponseEntity.status(403).body(e.localizedMessage)
         } catch (e: Exception) {
             ResponseEntity.status(404).body(e.localizedMessage)
         }
@@ -41,6 +45,8 @@ class ChatController(
         return try {
             val result = chatService.sendMessage(userId, conversationId, chatMessage)
             ResponseEntity.ok(result)
+        } catch (e: ForbiddenException) {
+            ResponseEntity.status(403).body(e.localizedMessage)
         } catch (e: Exception) {
             ResponseEntity.status(404).body(e.localizedMessage)
         }
@@ -57,20 +63,24 @@ class ChatController(
     }
 
     @PostMapping("/{conversationId}/addParticipants")
-    fun addParticipants(@PathVariable conversationId: Long, @RequestBody userIds : List<Long>) : ResponseEntity<Any> {
+    fun addParticipants(@RequestHeader(USER_ID_HEADER) actingUserId: Long, @PathVariable conversationId: Long, @RequestBody userIds : List<Long>) : ResponseEntity<Any> {
         return try {
-            val result = chatService.addParticipants(conversationId, userIds)
+            val result = chatService.addParticipants(actingUserId, conversationId, userIds)
             ResponseEntity.ok(result)
+        } catch (e: ForbiddenException) {
+            ResponseEntity.status(403).body(e.localizedMessage)
         } catch (e: Exception) {
             ResponseEntity.status(404).body(e.localizedMessage)
         }
     }
 
     @PostMapping("/{conversationId}/removeParticipants")
-    fun removeParticipants(@PathVariable conversationId: Long, @RequestBody userIds: List<Long>) : ResponseEntity<Any>{
+    fun removeParticipants(@RequestHeader(USER_ID_HEADER) actingUserId: Long, @PathVariable conversationId: Long, @RequestBody userIds: List<Long>) : ResponseEntity<Any>{
         return try {
-            val result = chatService.removeParticipants(conversationId, userIds)
+            val result = chatService.removeParticipants(actingUserId, conversationId, userIds)
             ResponseEntity.ok(result)
+        } catch (e: ForbiddenException) {
+            ResponseEntity.status(403).body(e.localizedMessage)
         } catch (e: Exception) {
             ResponseEntity.status(404).body(e.localizedMessage)
         }

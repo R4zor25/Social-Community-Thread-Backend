@@ -210,6 +210,7 @@ open class ThreadServiceImpl(
     override fun deletePost(userId: Long, threadId: Long, postId: Long) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val post = postRepository.findById(postId).getOrNull() ?: throw EntityNotFoundException("Post does not exist")
+        if (post.author.userId != userId) throw ForbiddenException("Only the author can delete this post")
         postRepository.deleteById(postId)
     }
 
@@ -222,7 +223,12 @@ open class ThreadServiceImpl(
     override fun modifyThreadData(userId: Long, threadId: Long, topicThread: TopicThread) {
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
-        threadRepository.save(topicThread)
+        thread.apply {
+            name = topicThread.name
+            description = topicThread.description
+            threadImage = topicThread.threadImage
+        }
+        threadRepository.save(thread)
     }
 
     override fun getTopicThreadsFiltered(containsString: String): List<TopicThread> {
@@ -298,6 +304,7 @@ open class ThreadServiceImpl(
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
         val post = postRepository.findById(postId).getOrNull() ?: throw EntityNotFoundException("Post does not exist")
         commentModel.apply {
+            this.id = null
             this.threadPost = post
             this.author = user
         }
@@ -325,6 +332,7 @@ open class ThreadServiceImpl(
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
         threadPost.apply {
+            postId = null
             author = user
             topicThread = thread
         }
@@ -333,6 +341,7 @@ open class ThreadServiceImpl(
 
     override fun createThread(userId: Long, topicThread: TopicThread) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
+        topicThread.topicThreadId = null
         threadRepository.save(topicThread)
     }
 

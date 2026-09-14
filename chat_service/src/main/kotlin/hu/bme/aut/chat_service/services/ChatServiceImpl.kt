@@ -28,13 +28,17 @@ class ChatServiceImpl(
 
     override fun getMessageDetails(userId: Long, conversationId: Long): ChatConversation {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
-        return chatRepository.findById(conversationId).getOrNull() ?: throw EntityNotFoundException("Discussion does not exist!")
+        val chatConversation = chatRepository.findById(conversationId).getOrNull() ?: throw EntityNotFoundException("Discussion does not exist!")
+        requireParticipant(chatConversation, userId)
+        return chatConversation
     }
 
     override fun sendMessage(userId: Long, chatConversationId: Long, chatMessage: ChatMessage) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
         val chatConversation = chatRepository.findById(chatConversationId).getOrNull() ?: throw EntityNotFoundException("Discussion does not exist!")
+        requireParticipant(chatConversation, userId)
         chatMessage.apply {
+            this.id = null
             this.author = user
             this.sentDate = Date()
         }
@@ -58,8 +62,9 @@ class ChatServiceImpl(
         chatRepository.save(conversation)
     }
 
-    override fun addParticipants(conversationId: Long, participants: List<Long>) {
+    override fun addParticipants(actingUserId: Long, conversationId: Long, participants: List<Long>) {
         val chatConversation = chatRepository.findById(conversationId).getOrNull() ?: throw EntityNotFoundException("Conversation does not exist!")
+        requireParticipant(chatConversation, actingUserId)
         val chatParticipants = userRepository.findAllById(participants)
         if(chatParticipants.size != participants.size) {
             throw EntityNotFoundException("User does not exist!")
@@ -68,13 +73,20 @@ class ChatServiceImpl(
         chatRepository.save(chatConversation)
     }
 
-    override fun removeParticipants(conversationId: Long, participants: List<Long>) {
+    override fun removeParticipants(actingUserId: Long, conversationId: Long, participants: List<Long>) {
         val chatConversation = chatRepository.findById(conversationId).getOrNull() ?: throw EntityNotFoundException("Conversation does not exist!")
+        requireParticipant(chatConversation, actingUserId)
         val chatParticipants = userRepository.findAllById(participants)
         if(chatParticipants.size != participants.size) {
             throw EntityNotFoundException("User does not exist!")
         }
         chatConversation.chatParticipants -= userRepository.findAllById(participants).toSet()
         chatRepository.save(chatConversation)
+    }
+
+    private fun requireParticipant(chatConversation: ChatConversation, userId: Long) {
+        if (chatConversation.chatParticipants.none { it.userId == userId }) {
+            throw ForbiddenException("User is not a participant of this conversation!")
+        }
     }
 }

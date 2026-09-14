@@ -105,6 +105,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetRecommendedPostsSuccessful() {
         val url = "/api/thread/1/posts/recommended"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -123,6 +124,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetRecommendedPostsUnsuccessful() {
         val url = "/api/thread/9/posts/recommended"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -138,6 +140,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetThreadPosts() {
         val url = "/api/thread/1/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -156,6 +159,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getAllTopicThreadPostsSuccessful(){
         val url = "/api/thread/1/1/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -172,6 +176,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getAllTopicThreadPostsUnsuccessful(){
         val url = "/api/thread/1/9/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -187,6 +192,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetThreadPostsUnsuccessful() {
         val url = "/api/thread/9/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -202,6 +208,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetThreadSuccessful() {
         val url = "/api/thread/1/1/details"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -218,6 +225,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetThreadUnsuccessful() {
         val url = "/api/thread/1/9/details"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -230,6 +238,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetPostDetailsSuccessful() {
         val url = "/api/thread/1/1/1/details"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -248,6 +257,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetPostDetailsUnsuccessful() {
         val url = "/api/thread/1/1/9/details"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -257,6 +267,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/9/1/details"
         val get2 = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -269,6 +280,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetFollowedThreadsSuccessful() {
         val url = "/api/thread/1/followed"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -286,6 +298,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetFollowedThreadsUnsuccessful() {
         val url = "/api/thread/9/followed"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -298,6 +311,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetSavedPostsSuccessful() {
         val url = "/api/thread/1/saved"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -316,6 +330,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetSavedPostsUnsuccessful() {
         val url = "/api/thread/9/saved"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -328,6 +343,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetUpvotedPostsSuccessful(){
         val url = "/api/thread/1/upvoted"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -345,6 +361,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetUpvotedPostsUnsuccessful(){
         val url = "/api/thread/9/upvoted"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -357,6 +374,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetDownvotedPostsSuccessful(){
         val url = "/api/thread/1/downvoted"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -374,6 +392,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetDownvotedPostsUnsuccessful(){
         val url = "/api/thread/9/downvoted"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -386,6 +405,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetPostsByUserSuccessful(){
         val url = "/api/thread/1/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -402,6 +422,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testGetPostsByUserUnsuccessful(){
         val url = "/api/thread/9/posts"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -414,6 +435,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testSavePostSuccessful(){
         val url = "/api/thread/1/1/2/save"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -423,6 +445,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/saved"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -439,6 +462,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testSavePostUnsuccessful(){
         val url = "/api/thread/9/1/2/save"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -448,6 +472,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/2/save"
         val put1 = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -457,6 +482,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/9/save"
         val put2 = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -470,6 +496,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUnsavePostSuccessful() {
         val url = "/api/thread/1/1/2/unsave"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -479,6 +506,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/saved"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -496,6 +524,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUnsavePostUnsuccessful() {
         val url = "/api/thread/9/1/2/unsave"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -505,6 +534,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/2/unsave"
         val put1 = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -514,6 +544,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/9/unsave"
         val put2 = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -526,6 +557,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testFollowThreadSuccessful() {
         val url = "/api/thread/1/2/follow"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -538,6 +570,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/followed"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -554,6 +587,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testFollowThreadUnsuccessful() {
         val url = "/api/thread/1/9/follow"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -566,6 +600,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUnfollowThreadSuccessful() {
         val url = "/api/thread/1/1/unfollow"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -578,6 +613,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/followed"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -594,6 +630,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUnfollowThreadUnsuccessful() {
         val url = "/api/thread/1/9/unfollow"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -606,6 +643,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDeletePostSuccessful() {
         val url = "/api/thread/1/1/1/delete"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -615,6 +653,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/posts"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -630,6 +669,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDeletePostUnsuccessful() {
         val url = "/api/thread/1/1/9/delete"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -639,6 +679,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/1/delete"
         val delete1 = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -651,6 +692,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDeleteThreadSuccessful() {
         val url = "/api/thread/1/1/delete"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -660,6 +702,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/details"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -675,6 +718,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDeleteThreadUnsuccessful() {
         val url = "/api/thread/1/9/delete"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -687,6 +731,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testPostCommentSuccessful() {
         val url = "/api/thread/1/1/1/comment"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 CommentModel(
@@ -701,6 +746,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/2/details"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -717,6 +763,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testPostCommentUnsuccessful() {
         val url = "/api/thread/1/1/9/comment"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 CommentModel(
@@ -734,6 +781,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUpvoteCommentSuccessful() {
         val url = "/api/thread/1/1/1/1/upvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -743,6 +791,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/2/details"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -759,6 +808,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testUpvoteCommentUnsuccessful() {
         val url = "/api/thread/1/1/1/9/upvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -768,6 +818,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/1/9/1/upvote"
         val put1 = mockMvc.put(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -777,6 +828,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/9/1/1/upvote"
         val put2 = mockMvc.put(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -786,6 +838,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url3 = "/api/thread/9/1/1/1/upvote"
         val put3 = mockMvc.put(url3) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -798,6 +851,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDownvoteCommentSuccessful() {
         val url = "/api/thread/1/1/1/1/downvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -807,6 +861,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/2/details"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -823,6 +878,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testDownvoteCommentUnsuccessful() {
         val url = "/api/thread/1/1/1/9/downvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -832,6 +888,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/1/9/1/downvote"
         val put1 = mockMvc.put(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -841,6 +898,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/9/1/1/downvote"
         val put2 = mockMvc.put(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -850,6 +908,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url3 = "/api/thread/9/1/1/1/downvote"
         val put3 = mockMvc.put(url3) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -864,6 +923,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testModifyThreadSuccessful(){
         val url = "/api/thread/1/1/modify"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 TopicThread().apply {
@@ -883,6 +943,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/details"
         val get = mockMvc.get(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -900,6 +961,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testModifyThreadUnsuccessful(){
         val url = "/api/thread/1/8/modify"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 TopicThread().apply {
@@ -919,6 +981,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getFilteredThreadsSuccessful(){
         val url = "/api/thread/search?containsString=TestThread1"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -936,6 +999,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getFilteredThreadsUnsuccessful(){
         val url = "/api/thread/search?containsString=TestThreadasdasdasda"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -952,6 +1016,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getFilteredPostsSuccessful(){
         val url = "/api/thread/1/1/post/search?containsString=TestTitle2"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -969,6 +1034,7 @@ class ThreadControllerTest @Autowired constructor(
     fun getFilteredPostsUnsuccessful(){
         val url = "/api/thread/9/1/post/search?containsString=TestPost"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -981,6 +1047,7 @@ class ThreadControllerTest @Autowired constructor(
     fun upvoteThreadPostSuccessful() {
         val url = "/api/thread/1/1/1/upvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -990,6 +1057,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/1/1/details"
         val get = mockMvc.get(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1006,6 +1074,7 @@ class ThreadControllerTest @Autowired constructor(
     fun upvoteThreadPostUnsuccessful() {
         val url = "/api/thread/9/1/1/upvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1015,6 +1084,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/1/upvote"
         val put1 = mockMvc.put(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1024,6 +1094,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/9/upvote"
         val put2 = mockMvc.put(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1036,6 +1107,7 @@ class ThreadControllerTest @Autowired constructor(
     fun downvoteThreadPostSuccessful() {
         val url = "/api/thread/1/1/1/downvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1045,6 +1117,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/1/1/details"
         val get = mockMvc.get(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1061,6 +1134,7 @@ class ThreadControllerTest @Autowired constructor(
     fun downvoteThreadPostUnsuccessful() {
         val url = "/api/thread/9/1/1/downvote"
         val put = mockMvc.put(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1070,6 +1144,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/1/downvote"
         val put1 = mockMvc.put(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1079,6 +1154,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url2 = "/api/thread/1/1/9/downvote"
         val put2 = mockMvc.put(url2) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1091,6 +1167,7 @@ class ThreadControllerTest @Autowired constructor(
     fun createThreadSuccessful() {
         val url = "/api/thread/1/create"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 TopicThread(
@@ -1106,6 +1183,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/3/details"
         val get = mockMvc.get(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1123,6 +1201,7 @@ class ThreadControllerTest @Autowired constructor(
         fun createThreadUnsuccessful() {
             val url = "/api/thread/9/create"
             val post = mockMvc.post(url) {
+                header("X-User-Id", "9")
                 contentType = MediaType.APPLICATION_JSON
                 content = objectMapper.writeValueAsString(
                     TopicThread(
@@ -1141,6 +1220,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testCreatePost(){
         val url = "/api/thread/1/1/create"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ThreadPost(
@@ -1155,6 +1235,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/1/3/details"
         val get = mockMvc.get(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -1171,6 +1252,7 @@ class ThreadControllerTest @Autowired constructor(
     fun testCreatePostUnsuccessful() {
         val url = "/api/thread/9/1/create"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ThreadPost(
@@ -1185,6 +1267,7 @@ class ThreadControllerTest @Autowired constructor(
 
         val url1 = "/api/thread/1/9/create"
         val post1 = mockMvc.post(url1) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ThreadPost(

@@ -49,6 +49,8 @@ class FriendController(
         return try {
             friendService.sendFriendRequest(userId, friendId)
             ResponseEntity.ok().build()
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(e.localizedMessage)
         } catch (e: Exception) {
             ResponseEntity.status(404).body(e.localizedMessage)
         }

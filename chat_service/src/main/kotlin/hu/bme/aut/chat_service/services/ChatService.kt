@@ -8,6 +8,6 @@ interface ChatService {
     fun getMessageDetails(userId: Long, conversationId: Long): ChatConversation
     fun sendMessage(userId: Long, chatConversationId: Long, chatMessage: ChatMessage)
     fun createChatConversation(creatorId: Long, chatConversation: ChatConversation)
-    fun addParticipants(conversationId: Long, participants : List<Long>)
-    fun removeParticipants(conversationId: Long, participants : List<Long>)
+    fun addParticipants(actingUserId: Long, conversationId: Long, participants : List<Long>)
+    fun removeParticipants(actingUserId: Long, conversationId: Long, participants : List<Long>)
 }

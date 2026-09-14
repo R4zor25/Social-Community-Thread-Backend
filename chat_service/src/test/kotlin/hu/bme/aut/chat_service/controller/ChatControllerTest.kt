@@ -50,6 +50,7 @@ class ChatControllerTest @Autowired constructor(
     fun testCreateChatConversationSuccessful() {
         val url = "/api/chat/1/create"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -71,6 +72,7 @@ class ChatControllerTest @Autowired constructor(
         val getUrl = "/api/chat/1/1"
 
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -91,6 +93,7 @@ class ChatControllerTest @Autowired constructor(
     fun testCreateChatConversationUnsuccessful() {
         val invalidUrl = "/api/chat/9/create"
         val postCreatorNotFound = mockMvc.post(invalidUrl) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -115,6 +118,7 @@ class ChatControllerTest @Autowired constructor(
 
         val createUrl = "/api/chat/1/create"
         val post = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -135,6 +139,7 @@ class ChatControllerTest @Autowired constructor(
 
         val url = "/api/chat/1/conversations"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -155,6 +160,7 @@ class ChatControllerTest @Autowired constructor(
     fun testGetAllConversationsUnsuccessful() {
         val url = "/api/chat/9/conversations"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -169,6 +175,7 @@ class ChatControllerTest @Autowired constructor(
 
         val createUrl = "/api/chat/1/create"
         val post = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -190,6 +197,7 @@ class ChatControllerTest @Autowired constructor(
 
         val getUrl = "/api/chat/1/1"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -209,6 +217,7 @@ class ChatControllerTest @Autowired constructor(
 
         val createUrl = "/api/chat/1/create"
         val post = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -232,6 +241,7 @@ class ChatControllerTest @Autowired constructor(
 
 
         val getUserNotFound = mockMvc.get(userDoesNotExistgetUrl) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -245,6 +255,7 @@ class ChatControllerTest @Autowired constructor(
             }
 
         val getConversationNotFound = mockMvc.get(conversationDoesNotExistgetUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -262,6 +273,7 @@ class ChatControllerTest @Autowired constructor(
     fun testSendMessageSuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -282,6 +294,7 @@ class ChatControllerTest @Autowired constructor(
 
         val messageUrl = "/api/chat/1/1/send"
         val post = mockMvc.post(messageUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatMessage(
@@ -301,6 +314,7 @@ class ChatControllerTest @Autowired constructor(
 
         val getUrl = "/api/chat/1/1"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -317,6 +331,7 @@ class ChatControllerTest @Autowired constructor(
     fun testSendMessageUnsuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -337,6 +352,7 @@ class ChatControllerTest @Autowired constructor(
         val messageUrlUserNotFound = "/api/chat/9/1/send"
 
         val post = mockMvc.post(messageUrlUserNotFound) {
+            header("X-User-Id", "9")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatMessage(
@@ -356,6 +372,7 @@ class ChatControllerTest @Autowired constructor(
 
         val messageUrlConversationNotFound = "/api/chat/1/9/send"
         val post2 = mockMvc.post(messageUrlConversationNotFound) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatMessage(
@@ -379,6 +396,7 @@ class ChatControllerTest @Autowired constructor(
     fun testAddUserToConversationSuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -399,6 +417,7 @@ class ChatControllerTest @Autowired constructor(
 
         val addUserUrl = "/api/chat/1/addParticipants"
         val post = mockMvc.post(addUserUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
@@ -416,6 +435,7 @@ class ChatControllerTest @Autowired constructor(
 
         val getUrl = "/api/chat/1/1"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -432,6 +452,7 @@ class ChatControllerTest @Autowired constructor(
     fun testAddUserToConversationUnsuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -451,6 +472,7 @@ class ChatControllerTest @Autowired constructor(
 
         val addUserUrlConversationDoesNotExist = "/api/chat/2/addParticipants"
         val post = mockMvc.post(addUserUrlConversationDoesNotExist) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
@@ -466,6 +488,7 @@ class ChatControllerTest @Autowired constructor(
 
         val addUserUrlUserDoesNotExist = "/api/chat/1/addParticipants"
         val post2 = mockMvc.post(addUserUrlUserDoesNotExist) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(9L)
@@ -484,6 +507,7 @@ class ChatControllerTest @Autowired constructor(
     fun testRemoveUserFromConversationSuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -504,6 +528,7 @@ class ChatControllerTest @Autowired constructor(
 
         val removeUserUrl = "/api/chat/1/removeParticipants"
         val remove = mockMvc.post(removeUserUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
@@ -519,6 +544,7 @@ class ChatControllerTest @Autowired constructor(
 
         val getUrl = "/api/chat/1/1"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -535,6 +561,7 @@ class ChatControllerTest @Autowired constructor(
     fun testRemoveUserFromConversationUnsuccessful() {
         val createUrl = "/api/chat/1/create"
         val createConversation = mockMvc.post(createUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 ChatConversation(
@@ -553,6 +580,7 @@ class ChatControllerTest @Autowired constructor(
 
         val removeUserUrlConversationNotFound = "/api/chat/2/removeParticipants"
         val remove = mockMvc.post(removeUserUrlConversationNotFound) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(3L)
@@ -568,6 +596,7 @@ class ChatControllerTest @Autowired constructor(
 
         val removeUserUrlUserNotFound = "/api/chat/1/removeParticipants"
         val remove2 = mockMvc.post(removeUserUrlUserNotFound) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 listOf(9L)

@@ -53,6 +53,7 @@ class FriendControllerTest @Autowired constructor(
 
         val url = "/api/friend/1"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -68,6 +69,7 @@ class FriendControllerTest @Autowired constructor(
     fun testGetUsersAllFriendUnsuccessful() {
         val url = "/api/friend/100"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -82,6 +84,7 @@ class FriendControllerTest @Autowired constructor(
     fun testGetUsersIncomingFriendRequestsSuccessful() {
         val url = "/api/friend/2/incoming"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -97,6 +100,7 @@ class FriendControllerTest @Autowired constructor(
     fun testGetUsersIncomingFriendRequestsUnsuccessful() {
         val url = "/api/friend/100/incoming"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -111,6 +115,7 @@ class FriendControllerTest @Autowired constructor(
     fun testGetUsersOutgoingFriendRequestsSuccessful() {
         val url = "/api/friend/1/outgoing"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -126,6 +131,7 @@ class FriendControllerTest @Autowired constructor(
     fun testGetUsersOutgoingFriendRequestsUnsuccessful() {
         val url = "/api/friend/100/outgoing"
         val get = mockMvc.get(url) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -140,6 +146,7 @@ class FriendControllerTest @Autowired constructor(
     fun testSendFriendRequestSuccessful() {
         val url = "/api/friend/1/send/4"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -151,6 +158,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/1/outgoing"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -166,6 +174,7 @@ class FriendControllerTest @Autowired constructor(
     fun testSendFriendRequestUnsuccessful() {
         val url = "/api/friend/100/4"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -177,6 +186,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/5/2"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "5")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -191,6 +201,7 @@ class FriendControllerTest @Autowired constructor(
     fun testAcceptFriendRequestSuccessful() {
         val url = "/api/friend/2/accept/3"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -202,6 +213,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/2"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -217,6 +229,7 @@ class FriendControllerTest @Autowired constructor(
     fun testAcceptFriendRequestUnsuccessful() {
         val url = "/api/friend/2/accept/100"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -228,6 +241,7 @@ class FriendControllerTest @Autowired constructor(
 
         val postUrl = "/api/friend/100/accept/2"
         val post1 = mockMvc.post(postUrl) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -242,6 +256,7 @@ class FriendControllerTest @Autowired constructor(
     fun testDeclineFriendRequestSuccessful() {
         val url = "/api/friend/2/decline/3"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -253,6 +268,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/2/incoming"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -268,6 +284,7 @@ class FriendControllerTest @Autowired constructor(
     fun testDeclineFriendRequestUnsuccessful() {
         val url = "/api/friend/2/decline/100"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "2")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -279,6 +296,7 @@ class FriendControllerTest @Autowired constructor(
 
         val postUrl = "/api/friend/100/decline/2"
         val post1 = mockMvc.post(postUrl) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -293,6 +311,7 @@ class FriendControllerTest @Autowired constructor(
     fun testRevokeFriendRequestSuccessful() {
         val url = "/api/friend/1/revoke/3"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -304,6 +323,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/1/outgoing"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -319,6 +339,7 @@ class FriendControllerTest @Autowired constructor(
     fun testRevokeFriendRequestUnsuccessful() {
         val url = "/api/friend/1/revoke/100"
         val post = mockMvc.post(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -330,6 +351,7 @@ class FriendControllerTest @Autowired constructor(
 
         val postUrl = "/api/friend/100/revoke/1"
         val post1 = mockMvc.post(postUrl) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -344,6 +366,7 @@ class FriendControllerTest @Autowired constructor(
     fun testDeleteFriendSuccessful() {
         val url = "/api/friend/1/delete/2"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -355,6 +378,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/1"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -370,6 +394,7 @@ class FriendControllerTest @Autowired constructor(
     fun testDeleteFriendUnsuccessful() {
         val url = "/api/friend/1/delete/100"
         val delete = mockMvc.delete(url) {
+            header("X-User-Id", "1")
             contentType = MediaType.APPLICATION_JSON
         }
 
@@ -381,6 +406,7 @@ class FriendControllerTest @Autowired constructor(
 
         val getUrl = "/api/friend/100"
         val get = mockMvc.get(getUrl) {
+            header("X-User-Id", "100")
             contentType = MediaType.APPLICATION_JSON
         }
 

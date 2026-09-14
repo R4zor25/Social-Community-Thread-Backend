@@ -3,6 +3,7 @@ package hu.bme.aut.thread_service.controllers
 import hu.bme.aut.thread_service.models.entities.CommentModel
 import hu.bme.aut.thread_service.models.entities.ThreadPost
 import hu.bme.aut.thread_service.models.entities.TopicThread
+import hu.bme.aut.thread_service.services.ForbiddenException
 import hu.bme.aut.thread_service.services.ThreadService
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
@@ -146,6 +147,8 @@ class ThreadController(
         return try {
             threadService.deletePost(userId, threadId, postId)
             ResponseEntity.ok().build()
+        } catch (e: ForbiddenException){
+            ResponseEntity.status(403).body(e.localizedMessage)
         } catch (e: Exception){
             ResponseEntity.status(404).body(e.localizedMessage)
         }

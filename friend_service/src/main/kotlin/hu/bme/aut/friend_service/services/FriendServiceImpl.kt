@@ -33,6 +33,9 @@ class FriendServiceImpl(
     override fun acceptFriendRequest(userId: Long, friendId: Long){
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
         val friend = userRepository.findById(friendId).getOrNull() ?: throw EntityNotFoundException("Friend does not exist!")
+        if (user.incomingFriendRequests.none { it.userId == friendId }) {
+            throw EntityNotFoundException("Friend request does not exist!")
+        }
         user.incomingFriendRequests.remove(friend)
         friend.outgoingFriendRequests.remove(user)
         user.friends.add(friend)
@@ -41,6 +44,7 @@ class FriendServiceImpl(
     }
 
     override fun sendFriendRequest(userId: Long, friendId: Long) {
+        require(userId != friendId) { "Cannot send a friend request to yourself!" }
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
         val friend = userRepository.findById(friendId).getOrNull() ?: throw EntityNotFoundException("Friend does not exist!")
         user.outgoingFriendRequests.add(friend)

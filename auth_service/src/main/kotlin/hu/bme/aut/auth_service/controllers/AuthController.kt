@@ -1,6 +1,7 @@
 package hu.bme.aut.auth_service.controllers
 
 
+import hu.bme.aut.auth_service.config.USER_ID_HEADER
 import hu.bme.aut.auth_service.domain.*
 import hu.bme.aut.auth_service.services.JwtService
 import hu.bme.aut.auth_service.services.RefreshTokenService
@@ -42,7 +43,8 @@ class AuthController(
     }
 
     @PutMapping("/users/{id}/update")
-    fun update(@PathVariable id: Long, @RequestBody appUser: AppUser): ResponseEntity<Any> {
+    fun update(@RequestHeader(USER_ID_HEADER) actingUserId: Long, @PathVariable id: Long, @RequestBody appUser: AppUser): ResponseEntity<Any> {
+        if (id != actingUserId) return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
         return try {
             ResponseEntity.ok().body(userService.update(id, appUser))
         } catch (e: Exception) {
