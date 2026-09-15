@@ -3,7 +3,7 @@ package hu.bme.aut.thread_service.controllers
 import hu.bme.aut.thread_service.models.entities.CommentModel
 import hu.bme.aut.thread_service.models.entities.ThreadPost
 import hu.bme.aut.thread_service.models.entities.TopicThread
-import hu.bme.aut.thread_service.services.ForbiddenException
+import hu.bme.aut.common.error.ForbiddenException
 import hu.bme.aut.thread_service.services.ThreadService
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j

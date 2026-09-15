@@ -1,7 +1,8 @@
 package hu.bme.aut.auth_service.controllers
 
 
-import hu.bme.aut.auth_service.config.USER_ID_HEADER
+import hu.bme.aut.common.identity.PublicEndpoint
+import hu.bme.aut.common.identity.USER_ID_HEADER
 import hu.bme.aut.auth_service.domain.*
 import hu.bme.aut.auth_service.services.JwtService
 import hu.bme.aut.auth_service.services.RefreshTokenService
@@ -53,9 +54,11 @@ class AuthController(
     }
 
 
+    @PublicEndpoint
     @PostMapping("/register")
     fun register(@RequestBody userRequest: UserRequest): ResponseEntity<Any> = userService.create(userRequest)
 
+    @PublicEndpoint
     @PostMapping("/login")
     fun login(@RequestBody authRequest: AuthRequest): ResponseEntity<Any> {
         val authenticate: Authentication = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(authRequest.username, authRequest.password))
@@ -69,6 +72,7 @@ class AuthController(
         }
     }
 
+    @PublicEndpoint
     @PostMapping("/refreshToken")
     fun refreshToken(@RequestBody refreshTokenRequest: RefreshTokenRequest): ResponseEntity<JwtResponse> {
         val refreshToken = refreshTokenService.findByToken(refreshTokenRequest.token).orElse(null)
@@ -82,6 +86,7 @@ class AuthController(
         })
     }
 
+    @PublicEndpoint
     @PostMapping("/validate")
     fun validateToken(@RequestBody token: String): String {
         jwtService.validateToken(token)

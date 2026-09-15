@@ -1,10 +1,10 @@
 package hu.bme.aut.chat_service.controllers
 
-import hu.bme.aut.chat_service.config.USER_ID_HEADER
+import hu.bme.aut.common.identity.USER_ID_HEADER
 import hu.bme.aut.chat_service.domain.ChatConversation
 import hu.bme.aut.chat_service.domain.ChatMessage
 import hu.bme.aut.chat_service.services.ChatService
-import hu.bme.aut.chat_service.services.ForbiddenException
+import hu.bme.aut.common.error.ForbiddenException
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import org.springframework.http.ResponseEntity

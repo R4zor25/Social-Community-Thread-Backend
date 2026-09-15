@@ -5,6 +5,7 @@ import hu.bme.aut.chat_service.domain.ChatConversation
 import hu.bme.aut.chat_service.domain.ChatMessage
 import hu.bme.aut.chat_service.repositories.ChatRepository
 import hu.bme.aut.chat_service.repositories.UserRepository
+import hu.bme.aut.common.error.ForbiddenException
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import lombok.RequiredArgsConstructor

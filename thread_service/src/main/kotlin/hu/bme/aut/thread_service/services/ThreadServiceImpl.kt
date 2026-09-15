@@ -11,6 +11,7 @@ import hu.bme.aut.thread_service.repositories.CommentRepository
 import hu.bme.aut.thread_service.repositories.PostRepository
 import hu.bme.aut.thread_service.repositories.ThreadRepository
 import hu.bme.aut.thread_service.repositories.UserRepository
+import hu.bme.aut.common.error.ForbiddenException
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import lombok.RequiredArgsConstructor
