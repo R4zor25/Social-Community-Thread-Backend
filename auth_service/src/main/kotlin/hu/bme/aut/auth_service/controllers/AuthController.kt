@@ -46,11 +46,7 @@ class AuthController(
     @PutMapping("/users/{id}/update")
     fun update(@RequestHeader(USER_ID_HEADER) actingUserId: Long, @PathVariable id: Long, @RequestBody appUser: AppUser): ResponseEntity<Any> {
         if (id != actingUserId) return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-        return try {
-            ResponseEntity.ok().body(userService.update(id, appUser))
-        } catch (e: Exception) {
-             ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        return ResponseEntity.ok().body(userService.update(id, appUser))
     }
 
 

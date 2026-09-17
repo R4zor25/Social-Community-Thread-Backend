@@ -3,6 +3,7 @@ package hu.bme.aut.thread_service.services
 import hu.bme.aut.thread_service.models.PersonalCommentModel
 import hu.bme.aut.thread_service.models.PersonalThreadPost
 import hu.bme.aut.thread_service.models.PersonalTopicThread
+import hu.bme.aut.thread_service.models.entities.AppUser
 import hu.bme.aut.thread_service.models.entities.CommentModel
 import hu.bme.aut.thread_service.models.entities.ThreadPost
 import hu.bme.aut.thread_service.models.entities.TopicThread
@@ -39,61 +40,20 @@ open class ThreadServiceImpl(
             recommendedPosts.addAll(thread.threadposts)
         }
         recommendedPosts.sortByDescending { it.postTime }
-        return recommendedPosts.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }
+        return recommendedPosts.map { toPersonalPost(it, user) }
     }
 
     override fun getAllPostOfTopicThread(userId: Long, threadId: Long): List<PersonalThreadPost> {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
-        return thread.threadposts.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }.toList()
+        return thread.threadposts.map { toPersonalPost(it, user) }.toList()
     }
 
     override fun getThreadPost(userId: Long, threadId: Long, postId: Long): PersonalThreadPost {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist!")
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
         val post = postRepository.findById(postId).getOrNull() ?: throw EntityNotFoundException("Post does not exist")
-        val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-        personalPost.apply {
-            this.comments = post.comments.map {
-                val voteType = when {
-                    user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                    user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                    else -> VoteType.CLEAR
-                }
-                PersonalCommentModel().apply {
-                    initPersonalCommentModel(it, voteType)
-                }
-            }.toMutableList()
-        }
-        return personalPost
+        return toPersonalPost(post, user)
     }
 
 
@@ -110,78 +70,22 @@ open class ThreadServiceImpl(
 
     override fun getUsersSavedPosts(userId: Long): List<PersonalThreadPost> {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
-        return user.savedPosts.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }
+        return user.savedPosts.map { toPersonalPost(it, user) }
     }
 
     override fun getUsersUpvotedPosts(userId: Long): List<PersonalThreadPost> {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
-        return user.upvotedPosts.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }
+        return user.upvotedPosts.map { toPersonalPost(it, user) }
     }
 
     override fun getUsersDownvotedPosts(userId: Long): List<PersonalThreadPost> {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
-        return user.downvotedPosts.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }
+        return user.downvotedPosts.map { toPersonalPost(it, user) }
     }
 
     override fun getPostsByUser(userId: Long): List<PersonalThreadPost> {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
-        return postRepository.findAll().filter { it.author.userId == userId }.map { post ->
-            val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-            personalPost.apply {
-                this.comments = post.comments.map {
-                    val voteType = when {
-                        user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                        user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                        else -> VoteType.CLEAR
-                    }
-                    PersonalCommentModel().apply {
-                        initPersonalCommentModel(it, voteType)
-                    }
-                }.toMutableList()
-            }
-        }
+        return postRepository.findAll().filter { it.author.userId == userId }.map { toPersonalPost(it, user) }
     }
 
     override fun savePost(userId: Long, threadId: Long, postId: Long) {
@@ -241,21 +145,7 @@ open class ThreadServiceImpl(
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val posts = postRepository.findAll()
         return posts.filter { it.topicThread.topicThreadId == threadId && it.title.contains(containsString) }
-            .map { post ->
-                val personalPost = PersonalThreadPost().initPersonalThreadPost(post, user)
-                personalPost.apply {
-                    this.comments = post.comments.map {
-                        val voteType = when {
-                            user.upvotedComments.contains(it) -> VoteType.UPVOTED
-                            user.downvotedComments.contains(it) -> VoteType.DOWNVOTED
-                            else -> VoteType.CLEAR
-                        }
-                        PersonalCommentModel().apply {
-                            initPersonalCommentModel(it, voteType)
-                        }
-                    }.toMutableList()
-                }
-            }
+            .map { toPersonalPost(it, user) }
     }
 
     override fun upvotePost(userId: Long, threadId: Long, postId: Long) {
@@ -312,14 +202,7 @@ open class ThreadServiceImpl(
         val commentResult = commentRepository.save(commentModel)
         post.comments.add(commentResult)
         postRepository.save(post)
-        val voteType = when {
-            user.upvotedComments.contains(commentResult) -> VoteType.UPVOTED
-            user.downvotedComments.contains(commentResult) -> VoteType.DOWNVOTED
-            else -> VoteType.CLEAR
-        }
-        return PersonalCommentModel().apply {
-            initPersonalCommentModel(commentResult, voteType)
-        }
+        return toPersonalComment(commentResult, user)
     }
 
     override fun createPost(userId: Long, threadId: Long, threadPost: ThreadPost) {
@@ -388,5 +271,19 @@ open class ThreadServiceImpl(
             user.downvotedComments.add(comment)
         }
         userRepository.save(user)
+    }
+
+    private fun toPersonalPost(post: ThreadPost, user: AppUser): PersonalThreadPost =
+        PersonalThreadPost().initPersonalThreadPost(post, user).apply {
+            comments = post.comments.map { toPersonalComment(it, user) }.toMutableList()
+        }
+
+    private fun toPersonalComment(comment: CommentModel, user: AppUser): PersonalCommentModel {
+        val voteType = when {
+            user.upvotedComments.contains(comment) -> VoteType.UPVOTED
+            user.downvotedComments.contains(comment) -> VoteType.DOWNVOTED
+            else -> VoteType.CLEAR
+        }
+        return PersonalCommentModel().apply { initPersonalCommentModel(comment, voteType) }
     }
 }

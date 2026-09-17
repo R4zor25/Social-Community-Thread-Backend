@@ -16,84 +16,50 @@ class FriendController(
 
     @GetMapping("/{userId}")
     fun getAllFriends(@PathVariable userId: Long): ResponseEntity<Any> {
-        return try {
-            val result = friendService.getUsersAllFriend(userId)
-            ResponseEntity.ok(result)
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        val result = friendService.getUsersAllFriend(userId)
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping("/{userId}/incoming")
     fun getIncomingFriendRequest(@PathVariable userId: Long): ResponseEntity<Any> {
-        return try {
-            val result = friendService.getUsersIncomingFriendRequests(userId)
-            ResponseEntity.ok(result)
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        val result = friendService.getUsersIncomingFriendRequests(userId)
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping("/{userId}/outgoing")
     fun getOutgoingFriendRequest(@PathVariable userId: Long): ResponseEntity<Any> {
-        return try {
-            val result = friendService.getUsersOutgoingFriendRequests(userId)
-            ResponseEntity.ok(result)
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        val result = friendService.getUsersOutgoingFriendRequests(userId)
+        return ResponseEntity.ok(result)
     }
 
     @PostMapping("/{userId}/send/{friendId}")
     fun sendFriendRequest(@PathVariable userId: Long, @PathVariable friendId: Long) : ResponseEntity<Any> {
-        return try {
-            friendService.sendFriendRequest(userId, friendId)
-            ResponseEntity.ok().build()
-        } catch (e: IllegalArgumentException) {
-            ResponseEntity.badRequest().body(e.localizedMessage)
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        friendService.sendFriendRequest(userId, friendId)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/{userId}/accept/{friendId}")
     fun acceptRequest(@PathVariable userId: Long, @PathVariable friendId: Long) : ResponseEntity<Any> {
-        return try {
-            friendService.acceptFriendRequest(userId, friendId)
-            ResponseEntity.ok().build()
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        friendService.acceptFriendRequest(userId, friendId)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/{userId}/decline/{friendId}")
     fun declineRequest(@PathVariable userId: Long, @PathVariable friendId: Long) : ResponseEntity<Any> {
-        return try {
-            friendService.declineFriendRequest(userId, friendId)
-            ResponseEntity.ok().build()
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        friendService.declineFriendRequest(userId, friendId)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/{userId}/revoke/{friendId}")
     fun revokeRequest(@PathVariable userId: Long, @PathVariable friendId: Long) : ResponseEntity<Any> {
-        return try {
-            friendService.revokeRequest(userId, friendId)
-            ResponseEntity.ok().build()
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        friendService.revokeRequest(userId, friendId)
+        return ResponseEntity.ok().build()
     }
 
 
     @DeleteMapping("/{userId}/delete/{friendId}")
     fun deleteFriend(@PathVariable userId: Long, @PathVariable friendId : Long) : ResponseEntity<Any> {
-        return try {
-            friendService.deleteFriend(userId, friendId)
-            ResponseEntity.ok().build()
-        } catch (e: Exception) {
-            ResponseEntity.status(404).body(e.localizedMessage)
-        }
+        friendService.deleteFriend(userId, friendId)
+        return ResponseEntity.ok().build()
     }
 }

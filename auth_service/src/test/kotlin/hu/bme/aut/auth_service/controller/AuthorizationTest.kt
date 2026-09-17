@@ -60,4 +60,12 @@ class AuthorizationTest @Autowired constructor(
     fun updatingOwnProfileIsAllowed() {
         updateProfileImage(targetId = aliceId, actingUserId = aliceId).andExpect { status { isOk() } }
     }
+
+    @Test
+    fun updatingANonExistentUserIsNotFound() {
+        updateProfileImage(targetId = 999, actingUserId = 999).andExpect {
+            status { isNotFound() }
+            content { string("User does not exist!") }
+        }
+    }
 }
