@@ -1,0 +1,116 @@
+name: social-community
+
+# Only the gateway (and the Eureka dashboard, on localhost) is published to the host.
+# The services trust the X-User-Id header set by the gateway, so they must not be reachable directly.
+
+# defaultZone is a map key, and keys taken from environment variable names are lowercased,
+# so EUREKA_CLIENT_SERVICEURL_DEFAULTZONE does not work; JSON keeps the case.
+x-eureka-client: &eureka-client
+  SPRING_APPLICATION_JSON: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"http://naming-server:8761/eureka"}}}}'
+  EUREKA_INSTANCE_PREFERIPADDRESS: "true"
+
+x-config-client: &config-client
+  SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+
+x-database: &database
+  DB_URL: jdbc:postgresql://postgres:5432/postgres
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+
+x-healthcheck: &healthcheck
+  test: ["CMD-SHELL", "curl -fs http://localhost:$${SERVER_PORT}/actuator/health || exit 1"]
+  interval: 5s
+  timeout: 3s
+  retries: 40
+  start_period: 20s
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  naming-server:
+    build: { context: ., args: { MODULE: naming-server } }
+    environment:
+      SERVER_PORT: "8761"
+    ports:
+      - "127.0.0.1:8761:8761"
+    healthcheck: *healthcheck
+
+  config-service:
+    build: { context: ., args: { MODULE: config_service } }
+    environment:
+      <<: *eureka-client
+      SERVER_PORT: "8888"
+    healthcheck: *healthcheck
+    depends_on:
+      naming-server: { condition: service_healthy }
+
+  # Schema: Hibernate "update" runs only in auth-service and then chat-service, one after the other.
+  # Together they map every table; thread- and friend-service start afterwards with DDL disabled.
+  auth-service:
+    build: { context: ., args: { MODULE: auth_service } }
+    environment:
+      <<: [*eureka-client, *config-client, *database]
+      SERVER_PORT: "49018"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    healthcheck: *healthcheck
+    depends_on:
+      postgres: { condition: service_healthy }
+      config-service: { condition: service_healthy }
+
+  chat-service:
+    build: { context: ., args: { MODULE: chat_service } }
+    environment:
+      <<: [*eureka-client, *config-client, *database]
+      SERVER_PORT: "9090"
+    healthcheck: *healthcheck
+    depends_on:
+      auth-service: { condition: service_healthy }
+
+  thread-service:
+    build: { context: ., args: { MODULE: thread_service } }
+    environment:
+      <<: [*eureka-client, *config-client, *database]
+      SERVER_PORT: "8081"
+      SPRING_JPA_GENERATE_DDL: "false"
+    healthcheck: *healthcheck
+    depends_on:
+      chat-service: { condition: service_healthy }
+
+  friend-service:
+    build: { context: ., args: { MODULE: friend_service } }
+    environment:
+      <<: [*eureka-client, *config-client, *database]
+      SERVER_PORT: "8082"
+      SPRING_JPA_GENERATE_DDL: "false"
+    healthcheck: *healthcheck
+    depends_on:
+      chat-service: { condition: service_healthy }
+
+  api-gateway:
+    build: { context: ., args: { MODULE: api-gateway } }
+    environment:
+      <<: *eureka-client
+      SERVER_PORT: "8765"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+    ports:
+      - "8765:8765"
+    healthcheck: *healthcheck
+    depends_on:
+      auth-service: { condition: service_healthy }
+      chat-service: { condition: service_healthy }
+      thread-service: { condition: service_healthy }
+      friend-service: { condition: service_healthy }
+
+volumes:
+  postgres-data:
