@@ -56,7 +56,7 @@ class ChatServiceImpl(
             this.chatCreator = chatCreator
             this.chatParticipants = chatParticipants
             this.conversationName = chatConversation.conversationName
-            this.creationDate = chatConversation.creationDate
+            this.creationDate = Date()
             this.messageList = mutableListOf()
             this.conversationImage = chatConversation.conversationImage
         }

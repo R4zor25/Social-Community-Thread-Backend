@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional
 import lombok.RequiredArgsConstructor
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.util.Date
 import kotlin.jvm.optionals.getOrNull
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -116,13 +117,15 @@ open class ThreadServiceImpl(
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val post = postRepository.findById(postId).getOrNull() ?: throw EntityNotFoundException("Post does not exist")
         if (post.author.userId != userId) throw ForbiddenException("Only the author can delete this post")
-        postRepository.deleteById(postId)
+        removePost(post)
     }
 
     override fun deleteThread(userId: Long, threadId: Long) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
-        threadRepository.deleteById(threadId)
+        userRepository.findFollowers(thread).forEach { it.followedThreads.remove(thread) }
+        thread.threadposts.toList().forEach { removePost(it) }
+        threadRepository.delete(thread)
     }
 
     override fun modifyThreadData(userId: Long, threadId: Long, topicThread: TopicThread) {
@@ -198,6 +201,8 @@ open class ThreadServiceImpl(
             this.id = null
             this.threadPost = post
             this.author = user
+            this.voteNumber = 0
+            this.commentTime = Date()
         }
         val commentResult = commentRepository.save(commentModel)
         post.comments.add(commentResult)
@@ -219,6 +224,8 @@ open class ThreadServiceImpl(
             postId = null
             author = user
             topicThread = thread
+            voteNumber = 0
+            postTime = Date()
         }
         postRepository.save(threadPost)
     }
@@ -271,6 +278,19 @@ open class ThreadServiceImpl(
             user.downvotedComments.add(comment)
         }
         userRepository.save(user)
+    }
+
+    /** Removes the references users hold to the post and its comments; the join tables would block the delete otherwise. */
+    private fun removePost(post: ThreadPost) {
+        userRepository.findUsersReferencing(post).forEach { user ->
+            user.savedPosts.remove(post)
+            user.upvotedPosts.remove(post)
+            user.downvotedPosts.remove(post)
+            user.upvotedComments.removeAll(post.comments.toSet())
+            user.downvotedComments.removeAll(post.comments.toSet())
+        }
+        post.topicThread.threadposts.remove(post)
+        postRepository.delete(post)
     }
 
     private fun toPersonalPost(post: ThreadPost, user: AppUser): PersonalThreadPost =

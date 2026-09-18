@@ -658,9 +658,10 @@ class ThreadControllerTest @Autowired constructor(
         }
 
         get.andDo { print() }.andExpect {
-            status { isNotFound() }
+            status { isOk() }
             content {
                 MediaType.APPLICATION_JSON
+                jsonPath("$.size()") { value(1) }
             }
         }
     }

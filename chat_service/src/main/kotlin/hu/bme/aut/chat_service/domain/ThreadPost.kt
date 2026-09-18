@@ -19,7 +19,7 @@ class ThreadPost(
     @GeneratedValue(strategy = GenerationType.AUTO)
     var postId: Long? = 0,
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinColumn(name = "topicThreadId")
     @JsonBackReference
     var topicThread: TopicThread  = TopicThread(),
@@ -30,7 +30,7 @@ class ThreadPost(
     @OneToMany(mappedBy = "threadPost", fetch = FetchType.EAGER, cascade = [CascadeType.REMOVE])
     var comments: MutableCollection<CommentModel> = mutableListOf(),
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @ManyToOne(fetch = FetchType.EAGER, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinColumn(name = "user_id")
     var author : AppUser = AppUser(),
 
