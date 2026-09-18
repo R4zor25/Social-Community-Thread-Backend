@@ -93,7 +93,12 @@ class AuthorizationTest @Autowired constructor(
 
         mockMvc.get("/api/chat/$bobId/$conversationId") {
             header("X-User-Id", bobId.toString())
-        }.andExpect { status { isOk() } }
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.chatParticipants.length()") { value(2) }
+            jsonPath("$.chatParticipants[0].email") { doesNotExist() }
+            jsonPath("$.chatCreator.email") { doesNotExist() }
+        }
     }
 
     @Test

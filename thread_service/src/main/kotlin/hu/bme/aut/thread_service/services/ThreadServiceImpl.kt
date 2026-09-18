@@ -123,6 +123,7 @@ open class ThreadServiceImpl(
     override fun deleteThread(userId: Long, threadId: Long) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
+        requireCreator(thread, userId)
         userRepository.findFollowers(thread).forEach { it.followedThreads.remove(thread) }
         thread.threadposts.toList().forEach { removePost(it) }
         threadRepository.delete(thread)
@@ -131,6 +132,7 @@ open class ThreadServiceImpl(
     override fun modifyThreadData(userId: Long, threadId: Long, topicThread: TopicThread) {
         val thread = threadRepository.findById(threadId).getOrNull() ?: throw EntityNotFoundException("Thread does not exist")
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
+        requireCreator(thread, userId)
         thread.apply {
             name = topicThread.name
             description = topicThread.description
@@ -233,6 +235,7 @@ open class ThreadServiceImpl(
     override fun createThread(userId: Long, topicThread: TopicThread) {
         val user = userRepository.findById(userId).getOrNull() ?: throw EntityNotFoundException("User does not exist")
         topicThread.topicThreadId = null
+        topicThread.creator = user
         threadRepository.save(topicThread)
     }
 
@@ -278,6 +281,10 @@ open class ThreadServiceImpl(
             user.downvotedComments.add(comment)
         }
         userRepository.save(user)
+    }
+
+    private fun requireCreator(thread: TopicThread, userId: Long) {
+        if (thread.creator?.userId != userId) throw ForbiddenException("Only the creator can change this thread")
     }
 
     /** Removes the references users hold to the post and its comments; the join tables would block the delete otherwise. */

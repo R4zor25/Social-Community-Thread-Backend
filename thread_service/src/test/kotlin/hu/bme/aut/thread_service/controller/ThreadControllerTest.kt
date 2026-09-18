@@ -96,8 +96,8 @@ class ThreadControllerTest @Autowired constructor(
             val b =commentRepository.save(commentModel)
             val b1 =postRepository.save(threadPost1)
             val b2 =postRepository.save(threadPost2)
-            val b3 =threadRepository.save(topicThread)
-            val b4 =threadRepository.save(topicThread1)
+            val b3 =threadRepository.save(topicThread.apply { creator = a })
+            val b4 =threadRepository.save(topicThread1.apply { creator = a })
         }
     }
 

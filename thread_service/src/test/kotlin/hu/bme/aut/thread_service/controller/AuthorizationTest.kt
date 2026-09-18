@@ -42,9 +42,10 @@ class AuthorizationTest @Autowired constructor(
     fun setUp() {
         aliceId = userRepository.save(AppUser(userName = "alice", email = "alice", password = "pw")).userId
         bobId = userRepository.save(AppUser(userName = "bob", email = "bob", password = "pw")).userId
-        val thread = threadRepository.save(TopicThread(name = "Thread", description = "Description"))
+        val alice = userRepository.findById(aliceId).get()
+        val thread = threadRepository.save(TopicThread(name = "Thread", description = "Description", creator = alice))
         threadId = thread.topicThreadId!!
-        otherThreadId = threadRepository.save(TopicThread(name = "Other", description = "Other")).topicThreadId!!
+        otherThreadId = threadRepository.save(TopicThread(name = "Other", description = "Other", creator = alice)).topicThreadId!!
         alicePostId = postRepository.save(ThreadPost(
             topicThread = thread,
             author = userRepository.findById(aliceId).get(),
@@ -94,8 +95,8 @@ class AuthorizationTest @Autowired constructor(
 
     @Test
     fun modifyUpdatesTheThreadFromThePathNotFromTheBody() {
-        mockMvc.put("/api/thread/$bobId/$threadId/modify") {
-            header("X-User-Id", bobId.toString())
+        mockMvc.put("/api/thread/$aliceId/$threadId/modify") {
+            header("X-User-Id", aliceId.toString())
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(
                 TopicThread(topicThreadId = otherThreadId, name = "Renamed", description = "Changed")
@@ -104,5 +105,52 @@ class AuthorizationTest @Autowired constructor(
 
         assertEquals("Renamed", threadRepository.findById(threadId).get().name)
         assertEquals("Other", threadRepository.findById(otherThreadId).get().name)
+    }
+
+    private fun modifyThread(userId: Long, id: Long) = mockMvc.put("/api/thread/$userId/$id/modify") {
+        header("X-User-Id", userId.toString())
+        contentType = MediaType.APPLICATION_JSON
+        content = objectMapper.writeValueAsString(TopicThread(name = "Renamed", description = "Changed"))
+    }
+
+    private fun deleteThread(userId: Long, id: Long) = mockMvc.delete("/api/thread/$userId/$id/delete") {
+        header("X-User-Id", userId.toString())
+    }
+
+    @Test
+    fun onlyTheCreatorCanModifyOrDeleteAThread() {
+        mockMvc.post("/api/thread/$aliceId/create") {
+            header("X-User-Id", aliceId.toString())
+            contentType = MediaType.APPLICATION_JSON
+            content = objectMapper.writeValueAsString(TopicThread(name = "Created", description = "By alice"))
+        }.andExpect { status { isOk() } }
+        val created = threadRepository.findAll().single { it.name == "Created" }
+        assertEquals(aliceId, created.creator?.userId)
+        val createdId = created.topicThreadId!!
+
+        modifyThread(bobId, createdId).andExpect { status { isForbidden() } }
+        deleteThread(bobId, createdId).andExpect { status { isForbidden() } }
+        modifyThread(aliceId, createdId).andExpect { status { isOk() } }
+        deleteThread(aliceId, createdId).andExpect { status { isOk() } }
+    }
+
+    @Test
+    fun threadWithoutCreatorCannotBeModifiedOrDeleted() {
+        val legacyId = threadRepository.save(TopicThread(name = "Legacy", description = "No creator")).topicThreadId!!
+
+        modifyThread(aliceId, legacyId).andExpect { status { isForbidden() } }
+        deleteThread(aliceId, legacyId).andExpect { status { isForbidden() } }
+        assertTrue(threadRepository.existsById(legacyId))
+    }
+
+    @Test
+    fun responsesDoNotContainOtherUsersEmail() {
+        mockMvc.get("/api/thread/$bobId/$threadId/posts") {
+            header("X-User-Id", bobId.toString())
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$[0].author.userName") { value("alice") }
+            jsonPath("$[0].author.email") { doesNotExist() }
+        }
     }
 }

@@ -27,20 +27,21 @@ class AuthController(
 ) {
     //@PreAuthorize("hasAuthority('Admin')")
     @GetMapping("/users")
-    fun findAll(): ResponseEntity<List<AppUser>> = ResponseEntity.ok(userService.findAll())
+    fun findAll(@RequestHeader(USER_ID_HEADER) viewerId: Long): ResponseEntity<List<UserResponse>> =
+        ResponseEntity.ok(userService.findAll().map { UserResponse.of(it, viewerId) })
 
     //@PreAuthorize("hasAuthority('Admin')")
     @GetMapping("/users/{id}")
-    fun findById(@PathVariable id: Long): ResponseEntity<AppUser> {
+    fun findById(@RequestHeader(USER_ID_HEADER) viewerId: Long, @PathVariable id: Long): ResponseEntity<UserResponse> {
         val user = userService.findById(id) ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(user)
+        return ResponseEntity.ok(UserResponse.of(user, viewerId))
     }
 
     //@PreAuthorize("hasAuthority('Admin') || hasAuthority('User')")
     @GetMapping("/users/username/{username}")
-    fun findByUsername(@PathVariable username: String): ResponseEntity<Any> {
+    fun findByUsername(@RequestHeader(USER_ID_HEADER) viewerId: Long, @PathVariable username: String): ResponseEntity<Any> {
         val user = userService.findByUsername(username)  ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(user)
+        return ResponseEntity.ok(UserResponse.of(user, viewerId))
     }
 
     @PutMapping("/users/{id}/update")

@@ -17,6 +17,7 @@ data class PersonalTopicThread(
     var description: String = "",
     var threadposts: MutableCollection<ThreadPost> = mutableListOf(),
     var isFollowedByUser : Boolean = false,
+    var creatorId: Long? = null,
 )
 {
     fun initPersonalTopicThread(thread: TopicThread, user: AppUser) : PersonalTopicThread{
@@ -27,6 +28,7 @@ data class PersonalTopicThread(
             this.threadImage = thread.threadImage
             this.isFollowedByUser = user.followedThreads.contains(thread)
             this.threadposts = thread.threadposts
+            this.creatorId = thread.creatorId
         }
     }
 }

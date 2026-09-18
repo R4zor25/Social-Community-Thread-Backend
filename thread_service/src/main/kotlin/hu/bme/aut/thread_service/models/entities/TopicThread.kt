@@ -26,4 +26,13 @@ class TopicThread(
     @JsonManagedReference
     @JsonIgnore
     var threadposts: MutableCollection<ThreadPost> = mutableListOf(),
-    )
+
+    // Null for threads created before creators were recorded; those cannot be modified or deleted.
+    @ManyToOne
+    @JoinColumn(name = "creator_id")
+    @JsonIgnore
+    var creator: AppUser? = null,
+) {
+    val creatorId: Long?
+        get() = creator?.userId
+}

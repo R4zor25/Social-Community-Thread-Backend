@@ -49,7 +49,7 @@ class DataIntegrityTest @Autowired constructor(
     fun setUp() = TransactionTemplate(transactionManager).executeWithoutResult {
         val alice = userRepository.save(AppUser(userName = "alice", email = "alice", password = "pw"))
         val bob = userRepository.save(AppUser(userName = "bob", email = "bob", password = "pw"))
-        val thread = threadRepository.save(TopicThread(name = "Thread", description = "Description"))
+        val thread = threadRepository.save(TopicThread(name = "Thread", description = "Description", creator = alice))
         val alicePost = postRepository.save(ThreadPost(topicThread = thread, author = alice, title = "Alice's post"))
         val bobPost = postRepository.save(ThreadPost(topicThread = thread, author = bob, title = "Bob's post"))
         val comment = commentRepository.save(CommentModel(threadPost = alicePost, author = bob, commentText = "Nice"))

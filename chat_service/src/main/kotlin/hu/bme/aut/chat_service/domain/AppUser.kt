@@ -17,6 +17,7 @@ class AppUser (
 
     var userName: String = "",
 
+    @JsonIgnore
     var email: String = "",
 
     @JsonIgnore

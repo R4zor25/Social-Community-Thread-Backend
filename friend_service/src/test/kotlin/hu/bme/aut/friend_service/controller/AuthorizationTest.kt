@@ -57,4 +57,20 @@ class AuthorizationTest @Autowired constructor(
             header("X-User-Id", aliceId.toString())
         }.andExpect { status { isBadRequest() } }
     }
+
+    @Test
+    fun friendListDoesNotContainEmails() {
+        mockMvc.post("/api/friend/$aliceId/send/$bobId") { header("X-User-Id", aliceId.toString()) }
+            .andExpect { status { isOk() } }
+        mockMvc.post("/api/friend/$bobId/accept/$aliceId") { header("X-User-Id", bobId.toString()) }
+            .andExpect { status { isOk() } }
+
+        mockMvc.get("/api/friend/$aliceId") {
+            header("X-User-Id", aliceId.toString())
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$[0].userName") { value("bob") }
+            jsonPath("$[0].email") { doesNotExist() }
+        }
+    }
 }

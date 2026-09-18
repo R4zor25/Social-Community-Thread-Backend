@@ -68,4 +68,27 @@ class AuthorizationTest @Autowired constructor(
             content { string("User does not exist!") }
         }
     }
+
+    @Test
+    fun lookupsShowTheEmailOnlyForTheCallersOwnAccount() {
+        mockMvc.get("/api/auth/users/$aliceId") {
+            header("X-User-Id", bobId.toString())
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.userName") { value("alice") }
+            jsonPath("$.email") { doesNotExist() }
+        }
+        mockMvc.get("/api/auth/users/username/alice") {
+            header("X-User-Id", bobId.toString())
+        }.andExpect { jsonPath("$.email") { doesNotExist() } }
+        mockMvc.get("/api/auth/users") {
+            header("X-User-Id", aliceId.toString())
+        }.andExpect {
+            jsonPath("$[?(@.userName == 'alice')].email") { value("alice") }
+            jsonPath("$[?(@.userName == 'bob')].email") { isEmpty() }
+        }
+        mockMvc.get("/api/auth/users/$aliceId") {
+            header("X-User-Id", aliceId.toString())
+        }.andExpect { jsonPath("$.email") { value("alice") } }
+    }
 }
