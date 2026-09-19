@@ -4,8 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>hu.bme.aut</groupId>
-		<artifactId>social-community-thread-backend</artifactId>
+		<artifactId>social-community-legacy-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../build/legacy-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>naming-server</artifactId>
 	<name>naming-server</name>

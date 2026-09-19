@@ -1,0 +1,7 @@
+{
+  "eventId": "7f3c2a9e-1b4d-4c8e-9a2f-5d6e7f8a9b0c",
+  "type": "UserRegistered",
+  "version": 1,
+  "occurredAt": "2026-01-01T12:00:00Z",
+  "payload": { "userId": 42, "username": "alice" }
+}

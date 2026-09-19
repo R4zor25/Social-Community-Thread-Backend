@@ -48,6 +48,12 @@ alice_id="$(echo "$alice_login" | json_field userId)"
 bob_id="$(login "$bob" | json_field userId)"
 [[ -n "$token" && -n "$alice_id" && -n "$bob_id" ]] || { echo "FAIL  could not log in"; exit 1; }
 
+# The gateway learns about each service from Eureka separately; wait until thread-service is routable too.
+for _ in $(seq 1 60); do
+  [[ "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$alice_id/saved")" != "503" ]] && break
+  sleep 2
+done
+
 expect "own data with token" 200 "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$alice_id/saved")"
 expect "own data without token" 401 "$(status "$GATEWAY/api/thread/$alice_id/saved")"
 expect "another user's data" 403 "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$bob_id/saved")"
