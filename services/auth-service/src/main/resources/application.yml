@@ -1,0 +1,43 @@
+# Connection settings come from SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
+# and SPRING_KAFKA_BOOTSTRAP_SERVERS; the signing keys from AUTH_PRIVATE_KEY_PATH and AUTH_PUBLIC_KEY_PATH.
+spring:
+  application:
+    name: auth-service
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  kafka:
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+auth:
+  issuer: ${AUTH_ISSUER:http://auth-service}
+  audience: social-community
+  access-token-ttl: 15m
+  refresh-token-ttl: 7d
+  private-key-path: ${AUTH_PRIVATE_KEY_PATH}
+  public-key-path: ${AUTH_PUBLIC_KEY_PATH}
+  throttle:
+    max-failures-per-username: 5
+    max-failures-per-ip: 20
+    window: 15m
+  outbox:
+    poll-interval: 1s
+    scheduling-enabled: true

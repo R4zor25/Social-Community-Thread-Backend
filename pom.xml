@@ -14,11 +14,11 @@
 		<module>build/parent</module>
 		<module>libs/events</module>
 		<module>libs/common-web</module>
+		<module>services/auth-service</module>
 		<module>common</module>
 		<module>naming-server</module>
 		<module>config_service</module>
 		<module>api-gateway</module>
-		<module>auth_service</module>
 		<module>thread_service</module>
 		<module>chat_service</module>
 		<module>friend_service</module>
