@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
-# End-to-end check against a running stack: docker compose up --build, then ./scripts/smoke-test.sh
+# End-to-end checks through the gateway against a running stack:
+#   scripts/generate-keys.sh && docker compose up --build --wait && scripts/smoke-test.sh
 set -euo pipefail
 
-GATEWAY="${GATEWAY:-http://localhost:8765}"
-SUFFIX="$(date +%s)"
+GATEWAY="${GATEWAY:-http://localhost:8080}"
+API="$GATEWAY/api/v2"
+SUFFIX="$(date +%s)$RANDOM"
 FAILURES=0
+BODY="$(mktemp)"
+trap 'rm -f "$BODY"' EXIT
 
-status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
+# Prints the status code; the response body is left in $BODY.
+request() { curl -s -o "$BODY" -w '%{http_code}' "$@"; }
+json() { curl -s -H 'Content-Type: application/json' "$@"; }
+field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^,\"}]*\).*/\1/p" "$BODY" | head -1; }
 
 expect() {
   local description="$1" expected="$2" actual="$3"
@@ -18,47 +25,69 @@ expect() {
   fi
 }
 
-json_field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^,\"}]*\).*/\1/p"; }
+# Waits until a route answers with something other than a gateway or startup error.
+wait_for() {
+  local description="$1"; shift
+  for _ in $(seq 1 60); do
+    case "$(request "$@" || true)" in 000|502|503|504) sleep 2 ;; *) return 0 ;; esac
+  done
+  echo "FAIL  $description did not become reachable"
+  exit 1
+}
 
 register() {
-  status -X POST "$GATEWAY/api/auth/register" -H 'Content-Type: application/json' \
-    -d "{\"username\":\"$1\",\"password\":\"secret\",\"email\":\"$1@example.com\"}"
+  request -X POST "$API/auth/register" -H 'Content-Type: application/json' \
+    -d "{\"username\":\"$1\",\"email\":\"$1@example.com\",\"password\":\"correct horse\"}"
 }
 
 login() {
-  curl -s -X POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json' \
-    -d "{\"username\":\"$1\",\"password\":\"secret\"}"
+  request -X POST "$API/auth/login" -H 'Content-Type: application/json' \
+    -d "{\"username\":\"$1\",\"password\":\"correct horse\"}" > /dev/null
 }
 
-echo "Waiting for the gateway to route to auth-service..."
-for _ in $(seq 1 60); do
-  code="$(status -X POST "$GATEWAY/api/auth/login" -H 'Content-Type: application/json' -d '{"username":"-","password":"-"}' || true)"
-  [[ "$code" == "403" ]] && break
-  sleep 2
-done
+refresh() {
+  request -X POST "$API/auth/refresh" -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$1\"}"
+}
 
+wait_for "auth-service through the gateway" -X POST "$API/auth/login" -H 'Content-Type: application/json' -d '{"username":"-","password":"-"}'
+
+echo "-- auth"
 alice="alice$SUFFIX"
 bob="bob$SUFFIX"
-expect "register $alice" 200 "$(register "$alice")"
-expect "register $bob" 200 "$(register "$bob")"
+expect "register $alice" 201 "$(register "$alice")"
+expect "register $bob" 201 "$(register "$bob")"
+bob_id="$(field id)"
 
-alice_login="$(login "$alice")"
-token="$(echo "$alice_login" | json_field accessToken)"
-alice_id="$(echo "$alice_login" | json_field userId)"
-bob_id="$(login "$bob" | json_field userId)"
-[[ -n "$token" && -n "$alice_id" && -n "$bob_id" ]] || { echo "FAIL  could not log in"; exit 1; }
+login "$alice"
+token="$(field accessToken)"
+refresh_token="$(field refreshToken)"
+[[ -n "$token" && -n "$refresh_token" ]] || { echo "FAIL  login returned no tokens"; exit 1; }
+auth=(-H "Authorization: Bearer $token")
 
-# The gateway learns about each service from Eureka separately; wait until thread-service is routable too.
-for _ in $(seq 1 60); do
-  [[ "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$alice_id/saved")" != "503" ]] && break
-  sleep 2
-done
+expect "own profile" 200 "$(request "${auth[@]}" "$API/users/me")"
+expect "own profile shows the email" "$alice@example.com" "$(field email)"
+expect "another user's profile" 200 "$(request "${auth[@]}" "$API/users/$bob_id")"
+expect "another user's profile hides the email" "" "$(field email)"
 
-expect "own data with token" 200 "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$alice_id/saved")"
-expect "own data without token" 401 "$(status "$GATEWAY/api/thread/$alice_id/saved")"
-expect "another user's data" 403 "$(status -H "Authorization: Bearer $token" "$GATEWAY/api/thread/$bob_id/saved")"
-expect "another user's data with a spoofed X-User-Id" 403 \
-  "$(status -H "Authorization: Bearer $token" -H "X-User-Id: $bob_id" "$GATEWAY/api/thread/$bob_id/saved")"
+expect "refresh" 200 "$(refresh "$refresh_token")"
+rotated="$(field refreshToken)"
+expect "reusing a rotated refresh token" 401 "$(refresh "$refresh_token")"
+expect "reuse revoked the rotated token too" 401 "$(refresh "$rotated")"
+
+login "$alice"
+fresh="$(field refreshToken)"
+expect "logout" 204 "$(request -X POST "$API/auth/logout" -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$fresh\"}")"
+expect "refresh after logout" 401 "$(refresh "$fresh")"
+
+expect "no token" 401 "$(request "$API/users/me")"
+expect "tampered token" 401 "$(request -H "Authorization: Bearer ${token%?}x" "$API/users/me")"
+expect "key set is not routed" 404 "$(request "${auth[@]}" "$GATEWAY/.well-known/jwks.json")"
+
+printf '\x89PNG\r\n\x1a\nsmoke' > "$BODY.png"
+expect "avatar upload" 204 "$(request -X PUT "${auth[@]}" -H 'Content-Type: image/png' --data-binary "@$BODY.png" "$API/users/me/avatar")"
+content_type="$(curl -s -o /dev/null -w '%{content_type}' "${auth[@]}" "$API/users/$(json "${auth[@]}" "$API/users/me" | sed -n 's/.*"id":\([0-9]*\).*/\1/p')/avatar")"
+expect "avatar content type" "image/png" "$content_type"
+rm -f "$BODY.png"
 
 if [[ "$FAILURES" -gt 0 ]]; then
   echo "$FAILURES check(s) failed"

@@ -1,0 +1,18 @@
+# Service URLs come from GATEWAY_SERVICES_AUTH, _THREAD, _FRIEND and _CHAT; token validation from
+# SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI, _ISSUER_URI and _AUDIENCES.
+spring:
+  application:
+    name: gateway
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true

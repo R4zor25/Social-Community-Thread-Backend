@@ -25,10 +25,12 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
-      - name: Create .env with throwaway secrets
+      - name: Create signing keys and .env with throwaway secrets
         run: |
-          echo "JWT_SECRET=$(openssl rand -base64 32)" >> .env
-          echo "DB_PASSWORD=$(openssl rand -hex 16)" >> .env
+          scripts/generate-keys.sh
+          for name in POSTGRES AUTH_DB THREAD_DB FRIEND_DB CHAT_DB; do
+            echo "${name}_PASSWORD=$(openssl rand -hex 16)" >> .env
+          done
       - name: Build and start the stack
         run: docker compose up -d --build --wait --wait-timeout 600
       - name: Run the smoke test

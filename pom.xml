@@ -15,10 +15,8 @@
 		<module>libs/events</module>
 		<module>libs/common-web</module>
 		<module>services/auth-service</module>
+		<module>gateway</module>
 		<module>common</module>
-		<module>naming-server</module>
-		<module>config_service</module>
-		<module>api-gateway</module>
 		<module>thread_service</module>
 		<module>chat_service</module>
 		<module>friend_service</module>
