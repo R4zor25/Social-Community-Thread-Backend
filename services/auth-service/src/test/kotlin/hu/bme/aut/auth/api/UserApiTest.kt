@@ -83,6 +83,7 @@ class UserApiTest : IntegrationTest() {
         // MockMvc adds the default charset to every response; compare type and subtype only.
         assertThat(MediaType.parseMediaType(response.contentType!!).let { "${it.type}/${it.subtype}" }).isEqualTo("image/png")
         assertThat(response.contentAsByteArray).isEqualTo(png)
+        assertThat(jdbc.queryForObject("select content_type from user_avatars", String::class.java)).isEqualTo("image/png")
     }
 
     @Test

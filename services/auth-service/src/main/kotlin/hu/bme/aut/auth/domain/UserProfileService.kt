@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,8 +23,10 @@ class UserProfileService(private val users: UserRepository, private val avatars:
         users.findByUsernameStartingWithIgnoreCaseOrderByUsernameAsc(usernamePrefix, pageable)
 
     @Transactional
-    fun setAvatar(userId: Long, content: ByteArray, contentType: String) {
+    fun setAvatar(userId: Long, content: ByteArray, rawContentType: String) {
         if (content.size > MAX_IMAGE_BYTES) throw ApiException(HttpStatus.CONTENT_TOO_LARGE, "Images are limited to 5 MB")
+        // Only type/subtype is stored, so parameters a client sends (e.g. charset) never reach the response.
+        val contentType = MediaType.parseMediaType(rawContentType).let { "${it.type}/${it.subtype}" }
         find(userId)
         val avatar = avatars.findByIdOrNull(userId)
         if (avatar == null) {

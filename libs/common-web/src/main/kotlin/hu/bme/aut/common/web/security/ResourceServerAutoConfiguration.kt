@@ -5,8 +5,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration
 import org.springframework.context.annotation.Bean
+import org.springframework.security.config.ObjectPostProcessor
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
 import org.springframework.security.web.SecurityFilterChain
 
 /** Default for every service: stateless, JWT required except for health and API docs. Replaced by a service's own chain. */
@@ -27,6 +29,11 @@ class ResourceServerAutoConfiguration {
             it.jwt { }
             it.authenticationEntryPoint(ProblemAuthenticationEntryPoint())
             it.accessDeniedHandler(ProblemAccessDeniedHandler())
+            it.withObjectPostProcessor(object : ObjectPostProcessor<BearerTokenAuthenticationFilter> {
+                override fun <O : BearerTokenAuthenticationFilter> postProcess(filter: O): O = filter.apply {
+                    setAuthenticationFailureHandler(ProblemAuthenticationFailureHandler(ProblemAuthenticationEntryPoint()))
+                }
+            })
         }
         .exceptionHandling {
             it.authenticationEntryPoint(ProblemAuthenticationEntryPoint())

@@ -5,12 +5,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.config.TopicBuilder
 
-/** auth-service owns user-events, so it creates the topic and its dead-letter topic. */
+/** auth-service owns user-events, so it creates the topic (compacted: the latest event per user is kept) and its dead-letter topic. */
 @Configuration(proxyBeanMethods = false)
 class TopicConfig {
 
     @Bean
-    fun userEventsTopic() = TopicBuilder.name(UserEvents.TOPIC).partitions(UserEvents.PARTITIONS).replicas(1).build()
+    fun userEventsTopic() = TopicBuilder.name(UserEvents.TOPIC).partitions(UserEvents.PARTITIONS).replicas(1).compact().build()
 
     // Same partition count: the dead-letter recoverer writes to the partition the record came from.
     @Bean

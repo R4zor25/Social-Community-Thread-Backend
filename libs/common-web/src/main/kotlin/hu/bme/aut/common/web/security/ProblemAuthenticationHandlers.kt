@@ -5,11 +5,13 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.authentication.AuthenticationServiceException
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.access.AccessDeniedHandler
+import org.springframework.security.web.authentication.AuthenticationFailureHandler
 
 /** Keeps the standard WWW-Authenticate headers and adds a problem+json body. */
 class ProblemAuthenticationEntryPoint : AuthenticationEntryPoint {
@@ -25,6 +27,17 @@ class ProblemAccessDeniedHandler : AccessDeniedHandler {
     override fun handle(request: HttpServletRequest, response: HttpServletResponse, e: AccessDeniedException) {
         bearer.handle(request, response, e)
         writeProblem(response, HttpStatus.FORBIDDEN, "Access denied", request.requestURI)
+    }
+}
+
+/** A token that cannot be verified right now (key set unreachable) is not a bad token: 503 instead of 401 or 500. */
+class ProblemAuthenticationFailureHandler(private val entryPoint: AuthenticationEntryPoint) : AuthenticationFailureHandler {
+    override fun onAuthenticationFailure(request: HttpServletRequest, response: HttpServletResponse, e: AuthenticationException) {
+        if (e is AuthenticationServiceException) {
+            writeProblem(response, HttpStatus.SERVICE_UNAVAILABLE, "Access tokens cannot be verified right now", request.requestURI)
+        } else {
+            entryPoint.commence(request, response, e)
+        }
     }
 }
 
