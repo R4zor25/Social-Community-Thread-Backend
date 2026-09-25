@@ -14,6 +14,7 @@
 		<module>build/parent</module>
 		<module>libs/events</module>
 		<module>libs/common-web</module>
+		<module>libs/user-projection</module>
 		<module>services/auth-service</module>
 		<module>gateway</module>
 		<module>common</module>

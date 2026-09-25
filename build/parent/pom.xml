@@ -47,6 +47,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>hu.bme.aut</groupId>
+				<artifactId>user-projection</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>io.mockk</groupId>
 				<artifactId>mockk-jvm</artifactId>
 				<version>${mockk.version}</version>
