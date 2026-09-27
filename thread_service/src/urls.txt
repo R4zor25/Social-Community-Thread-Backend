@@ -1,2 +1,0 @@
-API GATEWAY
-http://localhost:8765/THREAD-SERVICE/api/thread/threadId

@@ -1,0 +1,32 @@
+# Connection settings come from SPRING_DATASOURCE_URL, _USERNAME, _PASSWORD and SPRING_KAFKA_BOOTSTRAP_SERVERS;
+# token validation from SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI, _ISSUER_URI and _AUDIENCES.
+spring:
+  application:
+    name: thread-service
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  kafka:
+    consumer:
+      group-id: thread-service
+      # A new deployment reads user-events from the start to build its projection of every user.
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true

@@ -13,7 +13,8 @@ trap 'rm -f "$BODY"' EXIT
 # Prints the status code; the response body is left in $BODY.
 request() { curl -s -o "$BODY" -w '%{http_code}' "$@"; }
 json() { curl -s -H 'Content-Type: application/json' "$@"; }
-field() { sed -n "s/.*\"$1\":\"\{0,1\}\([^,\"}]*\).*/\1/p" "$BODY" | head -1; }
+# The first occurrence of a top-level-looking field; good enough for the flat checks below.
+field() { grep -o "\"$1\":\"\{0,1\}[^,\"}]*" "$BODY" | head -1 | sed "s/^\"$1\":\"\{0,1\}//"; }
 
 expect() {
   local description="$1" expected="$2" actual="$3"
@@ -80,7 +81,10 @@ expect "logout" 204 "$(request -X POST "$API/auth/logout" -H 'Content-Type: appl
 expect "refresh after logout" 401 "$(refresh "$fresh")"
 
 expect "no token" 401 "$(request "$API/users/me")"
-expect "tampered token" 401 "$(request -H "Authorization: Bearer ${token%?}x" "$API/users/me")"
+# Change the first signature character: it carries 6 signature bits. The last one carries only 2 plus padding,
+# so some replacements there decode to the same signature and the token stays valid.
+signature="${token##*.}"; [[ "${signature:0:1}" == "A" ]] && other="B" || other="A"
+expect "tampered token" 401 "$(request -H "Authorization: Bearer ${token%.*}.${other}${signature:1}" "$API/users/me")"
 expect "key set is not routed" 404 "$(request "${auth[@]}" "$GATEWAY/.well-known/jwks.json")"
 
 printf '\x89PNG\r\n\x1a\nsmoke' > "$BODY.png"
@@ -88,6 +92,29 @@ expect "avatar upload" 204 "$(request -X PUT "${auth[@]}" -H 'Content-Type: imag
 content_type="$(curl -s -o /dev/null -w '%{content_type}' "${auth[@]}" "$API/users/$(json "${auth[@]}" "$API/users/me" | sed -n 's/.*"id":\([0-9]*\).*/\1/p')/avatar")"
 expect "avatar content type" "image/png" "$content_type"
 rm -f "$BODY.png"
+
+echo "-- threads"
+wait_for "thread-service through the gateway" "${auth[@]}" "$API/feed"
+login "$bob"
+bob_auth=(-H "Authorization: Bearer $(field accessToken)")
+
+expect "create thread" 201 "$(request -X POST "${auth[@]}" -H 'Content-Type: application/json' -d '{"name":"Smoke","description":"Smoke test thread"}' "$API/threads")"
+thread_id="$(field id)"
+expect "bob follows the thread" 204 "$(request -X PUT "${bob_auth[@]}" "$API/threads/$thread_id/follow")"
+expect "bob posts" 201 "$(request -X POST "${bob_auth[@]}" -H 'Content-Type: application/json' -d '{"title":"Hello","body":"From bob","tags":["smoke"]}' "$API/threads/$thread_id/posts")"
+post_id="$(field id)"
+expect "post shows the author name" "$bob" "$(sed -n 's/.*"author":{"id":[0-9]*,"username":"\([^"]*\)".*/\1/p' "$BODY")"
+expect "alice comments" 201 "$(request -X POST "${auth[@]}" -H 'Content-Type: application/json' -d '{"body":"Welcome"}' "$API/posts/$post_id/comments")"
+expect "alice votes" 204 "$(request -X PUT "${auth[@]}" -H 'Content-Type: application/json' -d '{"direction":"UP"}' "$API/posts/$post_id/vote")"
+expect "alice saves" 204 "$(request -X PUT "${auth[@]}" "$API/posts/$post_id/save")"
+expect "post details" 200 "$(request "${auth[@]}" "$API/posts/$post_id")"
+expect "score after vote" 1 "$(field score)"
+expect "bob's feed" 200 "$(request "${bob_auth[@]}" "$API/feed")"
+expect "feed has the post" 1 "$(field totalItems)"
+expect "bob cannot rename alice's thread" 403 "$(request -X PATCH "${bob_auth[@]}" -H 'Content-Type: application/json' -d '{"name":"Hijacked"}' "$API/threads/$thread_id")"
+expect "bob cannot delete alice's thread" 403 "$(request -X DELETE "${bob_auth[@]}" "$API/threads/$thread_id")"
+expect "thread details" 200 "$(request "${bob_auth[@]}" "$API/threads/$thread_id")"
+expect "no email in thread responses" "" "$(grep -o '"email"' "$BODY" || true)"
 
 if [[ "$FAILURES" -gt 0 ]]; then
   echo "$FAILURES check(s) failed"

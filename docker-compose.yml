@@ -46,6 +46,9 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Topics are created by their owner (user-events by auth-service, compacted); a consumer that starts first
+      # must not auto-create it with default settings.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
       interval: 5s
@@ -63,6 +66,19 @@ services:
       AUTH_PRIVATE_KEY_PATH: /run/secrets/jwt-private
       AUTH_PUBLIC_KEY_PATH: /run/secrets/jwt-public
     secrets: [jwt-private, jwt-public]
+    healthcheck: *healthcheck
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
+  thread-service:
+    build: { context: ., args: { MODULE: services/thread-service } }
+    environment:
+      <<: *token-validation
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/thread
+      SPRING_DATASOURCE_USERNAME: thread
+      SPRING_DATASOURCE_PASSWORD: ${THREAD_DB_PASSWORD:?Set THREAD_DB_PASSWORD in .env}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     healthcheck: *healthcheck
     depends_on:
       postgres: { condition: service_healthy }
