@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import hu.bme.aut.testsupport.ServiceContainers
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
@@ -23,7 +24,7 @@ import org.springframework.test.web.servlet.post
     ]
 )
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration::class)
+@Import(ServiceContainers::class)
 abstract class IntegrationTest {
 
     @Autowired
