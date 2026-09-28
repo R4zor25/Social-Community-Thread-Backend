@@ -116,6 +116,25 @@ expect "bob cannot delete alice's thread" 403 "$(request -X DELETE "${bob_auth[@
 expect "thread details" 200 "$(request "${bob_auth[@]}" "$API/threads/$thread_id")"
 expect "no email in thread responses" "" "$(grep -o '"email"' "$BODY" || true)"
 
+echo "-- friends"
+wait_for "friend-service through the gateway" "${auth[@]}" "$API/friends"
+# bob has never called friend-service: it knows him only from the UserRegistered event, which may still be on its way.
+for _ in $(seq 1 15); do
+  status="$(request -X POST "${auth[@]}" -H 'Content-Type: application/json' -d "{\"recipientId\":$bob_id}" "$API/friend-requests")"
+  [[ "$status" == "404" ]] || break
+  sleep 2
+done
+expect "friend request to a user known only from events" 201 "$status"
+friend_request_id="$(field id)"
+expect "the sender cannot accept" 403 "$(request -X POST "${auth[@]}" "$API/friend-requests/$friend_request_id/accept")"
+expect "bob sees the incoming request" 200 "$(request "${bob_auth[@]}" "$API/friend-requests?direction=incoming")"
+expect "one incoming request" 1 "$(field totalItems)"
+expect "bob accepts" 204 "$(request -X POST "${bob_auth[@]}" "$API/friend-requests/$friend_request_id/accept")"
+expect "alice's friends" 200 "$(request "${auth[@]}" "$API/friends")"
+expect "alice has one friend" 1 "$(field totalItems)"
+expect "no email in friend responses" "" "$(grep -o '"email"' "$BODY" || true)"
+expect "a second request between friends" 409 "$(request -X POST "${bob_auth[@]}" -H 'Content-Type: application/json' -d "{\"recipientId\":$(json "${auth[@]}" "$API/users/me" | sed -n 's/.*"id":\([0-9]*\).*/\1/p')}" "$API/friend-requests")"
+
 if [[ "$FAILURES" -gt 0 ]]; then
   echo "$FAILURES check(s) failed"
   exit 1

@@ -84,6 +84,19 @@ services:
       postgres: { condition: service_healthy }
       kafka: { condition: service_healthy }
 
+  friend-service:
+    build: { context: ., args: { MODULE: services/friend-service } }
+    environment:
+      <<: *token-validation
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/friend
+      SPRING_DATASOURCE_USERNAME: friend
+      SPRING_DATASOURCE_PASSWORD: ${FRIEND_DB_PASSWORD:?Set FRIEND_DB_PASSWORD in .env}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    healthcheck: *healthcheck
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
   # No depends_on on auth-service: the key set is fetched on the first request.
   gateway:
     build: { context: ., args: { MODULE: gateway } }
