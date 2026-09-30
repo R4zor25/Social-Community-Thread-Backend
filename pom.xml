@@ -20,5 +20,6 @@
 		<module>services/thread-service</module>
 		<module>services/friend-service</module>
 		<module>services/chat-service</module>
+		<module>build/coverage</module>
 	</modules>
 </project>
