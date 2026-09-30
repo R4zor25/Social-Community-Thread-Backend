@@ -20,6 +20,7 @@
 		<spring-cloud.version>2025.1.3</spring-cloud.version>
 		<mockk.version>1.14.11</mockk.version>
 		<jacoco.version>0.8.15</jacoco.version>
+		<springdoc.version>3.0.3</springdoc.version>
 	</properties>
 
 	<dependencyManagement>
@@ -56,6 +57,11 @@
 				<groupId>hu.bme.aut</groupId>
 				<artifactId>test-support</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springdoc</groupId>
+				<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+				<version>${springdoc.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.mockk</groupId>
