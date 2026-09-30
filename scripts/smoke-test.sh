@@ -135,6 +135,29 @@ expect "alice has one friend" 1 "$(field totalItems)"
 expect "no email in friend responses" "" "$(grep -o '"email"' "$BODY" || true)"
 expect "a second request between friends" 409 "$(request -X POST "${bob_auth[@]}" -H 'Content-Type: application/json' -d "{\"recipientId\":$(json "${auth[@]}" "$API/users/me" | sed -n 's/.*"id":\([0-9]*\).*/\1/p')}" "$API/friend-requests")"
 
+echo "-- chat"
+wait_for "chat-service through the gateway" "${auth[@]}" "$API/conversations"
+carol="carol$SUFFIX"
+expect "register $carol" 201 "$(register "$carol")"
+login "$carol"
+carol_auth=(-H "Authorization: Bearer $(field accessToken)")
+for _ in $(seq 1 15); do
+  status="$(request -X POST "${auth[@]}" -H 'Content-Type: application/json' -d "{\"name\":\"Smoke chat\",\"participantIds\":[$bob_id]}" "$API/conversations")"
+  [[ "$status" == "404" ]] || break
+  sleep 2
+done
+expect "conversation with bob" 201 "$status"
+conversation_id="$(field id)"
+expect "alice sends a message" 201 "$(request -X POST "${auth[@]}" -H 'Content-Type: application/json' -d '{"body":"Hello bob"}' "$API/conversations/$conversation_id/messages")"
+expect "bob reads the messages" 200 "$(request "${bob_auth[@]}" "$API/conversations/$conversation_id/messages")"
+expect "bob sees one message" 1 "$(field totalItems)"
+expect "carol is not a participant" 403 "$(request "${carol_auth[@]}" "$API/conversations/$conversation_id/messages")"
+alice_id="$(json "${auth[@]}" "$API/users/me" | sed -n 's/.*"id":\([0-9]*\).*/\1/p')"
+expect "bob cannot remove alice" 403 "$(request -X DELETE "${bob_auth[@]}" "$API/conversations/$conversation_id/participants/$alice_id")"
+expect "bob leaves" 204 "$(request -X DELETE "${bob_auth[@]}" "$API/conversations/$conversation_id/participants/$bob_id")"
+expect "alice still has the conversation" 200 "$(request "${auth[@]}" "$API/conversations/$conversation_id")"
+expect "no email in chat responses" "" "$(grep -o '"email"' "$BODY" || true)"
+
 if [[ "$FAILURES" -gt 0 ]]; then
   echo "$FAILURES check(s) failed"
   exit 1

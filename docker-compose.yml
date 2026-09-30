@@ -97,6 +97,19 @@ services:
       postgres: { condition: service_healthy }
       kafka: { condition: service_healthy }
 
+  chat-service:
+    build: { context: ., args: { MODULE: services/chat-service } }
+    environment:
+      <<: *token-validation
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chat
+      SPRING_DATASOURCE_USERNAME: chat
+      SPRING_DATASOURCE_PASSWORD: ${CHAT_DB_PASSWORD:?Set CHAT_DB_PASSWORD in .env}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    healthcheck: *healthcheck
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_healthy }
+
   # No depends_on on auth-service: the key set is fetched on the first request.
   gateway:
     build: { context: ., args: { MODULE: gateway } }

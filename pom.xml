@@ -20,7 +20,7 @@
 		<module>gateway</module>
 		<module>services/thread-service</module>
 		<module>services/friend-service</module>
+		<module>services/chat-service</module>
 		<module>common</module>
-		<module>chat_service</module>
 	</modules>
 </project>
