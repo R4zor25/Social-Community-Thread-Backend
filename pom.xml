@@ -10,7 +10,6 @@
 	<description>Aggregator for all modules</description>
 
 	<modules>
-		<module>build/legacy-parent</module>
 		<module>build/parent</module>
 		<module>libs/events</module>
 		<module>libs/common-web</module>
@@ -21,6 +20,5 @@
 		<module>services/thread-service</module>
 		<module>services/friend-service</module>
 		<module>services/chat-service</module>
-		<module>common</module>
 	</modules>
 </project>
