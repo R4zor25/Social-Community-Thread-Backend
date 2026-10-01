@@ -10,7 +10,6 @@ import hu.bme.aut.friend.persistence.FriendshipRepository
 import hu.bme.aut.projection.UserProjections
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -72,7 +71,7 @@ class FriendService(
         if (friendships.existsById(id)) friendships.deleteById(id)
     }
 
-    private fun find(requestId: Long) = requests.findByIdOrNull(requestId) ?: throw NotFoundException("Friend request does not exist")
+    private fun find(requestId: Long) = requests.findForUpdate(requestId) ?: throw NotFoundException("Friend request does not exist")
 
     private fun addressedTo(caller: CurrentUser, requestId: Long): FriendRequest {
         val request = find(requestId)

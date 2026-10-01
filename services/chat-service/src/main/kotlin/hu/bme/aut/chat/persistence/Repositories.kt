@@ -7,11 +7,18 @@ import hu.bme.aut.chat.domain.Participant
 import hu.bme.aut.chat.domain.ParticipantId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 
 interface ConversationRepository : JpaRepository<Conversation, Long> {
+    /** Participant removals are serialized, so exactly one of them sees the conversation become empty. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from Conversation c where c.id = :id")
+    fun findForUpdate(id: Long): Conversation?
+
     @Query(
         """
         select c from Conversation c

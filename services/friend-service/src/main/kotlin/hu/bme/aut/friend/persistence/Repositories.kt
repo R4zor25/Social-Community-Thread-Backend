@@ -5,10 +5,17 @@ import hu.bme.aut.friend.domain.Friendship
 import hu.bme.aut.friend.domain.FriendshipId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 
 interface FriendRequestRepository : JpaRepository<FriendRequest, Long> {
+    /** Answers to one request are serialized; the second finds it gone. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from FriendRequest r where r.id = :id")
+    fun findForUpdate(id: Long): FriendRequest?
+
     fun findByRecipientIdOrderByCreatedAtDescIdDesc(recipientId: Long, pageable: Pageable): Page<FriendRequest>
 
     fun findBySenderIdOrderByCreatedAtDescIdDesc(senderId: Long, pageable: Pageable): Page<FriendRequest>

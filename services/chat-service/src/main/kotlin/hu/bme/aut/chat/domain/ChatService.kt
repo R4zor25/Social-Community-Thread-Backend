@@ -70,7 +70,7 @@ class ChatService(
     /** The conversation is deleted with its last participant. */
     @Transactional
     fun removeParticipant(caller: CurrentUser, conversationId: Long, userId: Long) {
-        val conversation = participantOf(caller, conversationId)
+        val conversation = participantOf(caller, conversationId, lock = true)
         if (!mayRemove(caller.id, userId, conversation.creatorId)) throw ForbiddenException("Only the creator can remove other participants")
         val id = ParticipantId(conversationId, userId)
         if (!participants.existsById(id)) return
@@ -99,8 +99,8 @@ class ChatService(
         return images.findByIdOrNull(conversationId) ?: throw NotFoundException("Conversation has no image")
     }
 
-    private fun participantOf(caller: CurrentUser, conversationId: Long): Conversation {
-        val conversation = conversations.findByIdOrNull(conversationId) ?: throw NotFoundException("Conversation does not exist")
+    private fun participantOf(caller: CurrentUser, conversationId: Long, lock: Boolean = false): Conversation {
+        val conversation = (if (lock) conversations.findForUpdate(conversationId) else conversations.findByIdOrNull(conversationId)) ?: throw NotFoundException("Conversation does not exist")
         if (!participants.existsById(ParticipantId(conversationId, caller.id))) throw ForbiddenException("You are not a participant of this conversation")
         return conversation
     }
