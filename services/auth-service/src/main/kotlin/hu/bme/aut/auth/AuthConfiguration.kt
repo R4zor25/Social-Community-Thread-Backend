@@ -5,11 +5,13 @@ import hu.bme.aut.auth.domain.LoginThrottle
 import hu.bme.aut.auth.domain.TokenService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Clock
 
 @Configuration(proxyBeanMethods = false)
+@EnableScheduling
 class AuthConfiguration {
 
     @Bean

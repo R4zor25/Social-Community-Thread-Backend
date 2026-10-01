@@ -1,9 +1,11 @@
 package hu.bme.aut.auth.domain
 
+import org.springframework.scheduling.annotation.Scheduled
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 class TooManyLoginAttemptsException(val retryAfter: Duration) : RuntimeException("Too many failed login attempts")
 
@@ -39,11 +41,33 @@ class LoginThrottle(
         failuresByUsername.remove(username.lowercase())
     }
 
+    /** Drops counters whose failures have all expired; without this, every username ever tried would stay in memory. */
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+    fun evictExpired(): Int {
+        val now = clock.instant()
+        var evicted = 0
+        listOf(failuresByUsername, failuresByIp).forEach { failures ->
+            failures.keys.forEach { key ->
+                failures.computeIfPresent(key) { _, times ->
+                    synchronized(times) {
+                        prune(times, now)
+                        if (times.isEmpty()) null.also { evicted++ } else times
+                    }
+                }
+            }
+        }
+        return evicted
+    }
+
+    // compute() keeps a concurrent eviction from dropping the deque this failure is added to.
     private fun record(failures: ConcurrentHashMap<String, ArrayDeque<Instant>>, key: String, now: Instant) {
-        val times = failures.computeIfAbsent(key) { ArrayDeque() }
-        synchronized(times) {
-            prune(times, now)
-            times.addLast(now)
+        failures.compute(key) { _, existing ->
+            (existing ?: ArrayDeque()).also { times ->
+                synchronized(times) {
+                    prune(times, now)
+                    times.addLast(now)
+                }
+            }
         }
     }
 

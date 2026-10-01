@@ -7,7 +7,9 @@ import hu.bme.aut.auth.domain.Session
 import hu.bme.aut.auth.domain.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.Instant
@@ -34,7 +36,12 @@ interface SessionRepository : JpaRepository<Session, UUID> {
     fun revokeAllForUser(userId: Long, now: Instant): Int
 }
 
-interface RefreshTokenRepository : JpaRepository<RefreshToken, String>
+interface RefreshTokenRepository : JpaRepository<RefreshToken, String> {
+    /** Parallel refreshes with one token are serialized, so the second one sees it as used. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from RefreshToken t where t.tokenHash = :tokenHash")
+    fun findForUpdate(tokenHash: String): RefreshToken?
+}
 
 interface OutboxRepository : JpaRepository<OutboxEvent, UUID> {
     /** Locks the oldest unpublished rows; other publisher instances skip them instead of sending them twice. */

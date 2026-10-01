@@ -75,4 +75,16 @@ class LoginThrottleTest {
 
         throttle.check("alice", "10.0.0.1")
     }
+
+    @Test
+    fun expiredCountersAreEvictedSoRandomUsernamesCannotGrowMemory() {
+        fail("random1", "10.0.0.1", 1)
+        fail("random2", "10.0.0.1", 1)
+
+        assertThat(throttle.evictExpired()).isZero()
+        clock.advance(Duration.ofMinutes(15))
+
+        assertThat(throttle.evictExpired()).isEqualTo(3)
+        assertThat(throttle.evictExpired()).isZero()
+    }
 }

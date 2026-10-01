@@ -57,7 +57,7 @@ class SessionService(
     @Transactional(noRollbackFor = [InvalidRefreshTokenException::class])
     fun refresh(refreshToken: String): Tokens {
         val now = clock.instant()
-        val stored = refreshTokens.findByIdOrNull(hash(refreshToken)) ?: throw InvalidRefreshTokenException()
+        val stored = refreshTokens.findForUpdate(hash(refreshToken)) ?: throw InvalidRefreshTokenException()
         val session = sessions.findByIdOrNull(stored.sessionId) ?: throw InvalidRefreshTokenException()
         if (stored.usedAt != null) {
             sessions.revokeAllForUser(session.userId, now)
