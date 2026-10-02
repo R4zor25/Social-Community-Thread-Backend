@@ -4,6 +4,7 @@ import hu.bme.aut.events.EventEnvelope
 import hu.bme.aut.events.EventJson
 import hu.bme.aut.events.UserEvents
 import hu.bme.aut.events.UserRegistered
+import hu.bme.aut.testsupport.ServiceContainers
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
@@ -13,15 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.kafka.autoconfigure.KafkaConnectionDetails
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.KafkaTemplate
-import org.testcontainers.kafka.KafkaContainer
-import org.testcontainers.postgresql.PostgreSQLContainer
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -29,16 +24,8 @@ import java.util.UUID
 @SpringBootApplication
 class ProjectionTestApplication
 
-@TestConfiguration(proxyBeanMethods = false)
-class ProjectionContainers {
-    @Bean @ServiceConnection fun postgres() = PostgreSQLContainer("postgres:16-alpine")
-    @Bean @ServiceConnection fun kafka() = KafkaContainer("apache/kafka:4.3.1")
-    @Bean fun userEventsTopic() = TopicBuilder.name(UserEvents.TOPIC).partitions(UserEvents.PARTITIONS).replicas(1).compact().build()
-    @Bean fun deadLetterTopic() = TopicBuilder.name(UserEvents.DEAD_LETTER_TOPIC).partitions(UserEvents.PARTITIONS).replicas(1).build()
-}
-
 @SpringBootTest(classes = [ProjectionTestApplication::class])
-@Import(ProjectionContainers::class)
+@Import(ServiceContainers::class)
 abstract class ProjectionTestSupport {
 
     @Autowired lateinit var jdbc: JdbcTemplate

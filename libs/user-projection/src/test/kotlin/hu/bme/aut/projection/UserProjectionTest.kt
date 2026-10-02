@@ -58,6 +58,16 @@ class UserProjectionTest : ProjectionTestSupport() {
     }
 
     @Test
+    fun referencesAreLoadedInOneGoAndUnknownIdsStillGetOne() {
+        projections.ensure(CurrentUser(109, "heidi"))
+
+        val ref = projections.refs(listOf(109, 998))
+
+        assertThat(ref(109)).isEqualTo(UserRef(109, "heidi"))
+        assertThat(ref(998)).isEqualTo(UserRef(998, "unknown"))
+    }
+
+    @Test
     fun existsOnlyForProjectedUsers() {
         projections.ensure(CurrentUser(108, "grace"))
 

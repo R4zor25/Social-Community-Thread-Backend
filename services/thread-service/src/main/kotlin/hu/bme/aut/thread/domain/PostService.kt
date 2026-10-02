@@ -10,12 +10,12 @@ import hu.bme.aut.thread.persistence.FollowAndSaveRepository
 import hu.bme.aut.thread.persistence.PostAttachmentRepository
 import hu.bme.aut.thread.persistence.PostRepository
 import hu.bme.aut.thread.persistence.ThreadRepository
-import java.time.Clock
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 
 @Service
 class PostService(

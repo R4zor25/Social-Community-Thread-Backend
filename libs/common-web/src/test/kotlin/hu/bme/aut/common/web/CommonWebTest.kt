@@ -1,14 +1,12 @@
 package hu.bme.aut.common.web
 
-import org.springframework.test.web.servlet.put
-import org.springframework.web.bind.annotation.PutMapping
-import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.common.web.error.ConflictException
 import hu.bme.aut.common.web.error.ForbiddenException
 import hu.bme.aut.common.web.error.NotFoundException
 import hu.bme.aut.common.web.paging.PageResponse
 import hu.bme.aut.common.web.paging.toResponse
 import hu.bme.aut.common.web.security.CurrentUser
+import hu.bme.aut.common.web.upload.Upload
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import org.junit.jupiter.api.Test
@@ -28,8 +26,10 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.put
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 

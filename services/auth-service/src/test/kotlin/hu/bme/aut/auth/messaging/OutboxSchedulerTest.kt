@@ -2,8 +2,8 @@ package hu.bme.aut.auth.messaging
 
 import hu.bme.aut.auth.TestClockConfiguration
 import hu.bme.aut.auth.TestKeys
-import hu.bme.aut.auth.TestcontainersConfiguration
 import hu.bme.aut.auth.domain.RegistrationService
+import hu.bme.aut.testsupport.Containers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ import java.time.Instant
 
 /** With scheduling on (the default outside tests), a registration's event leaves the outbox without any manual call. */
 @SpringBootTest(properties = ["auth.outbox.scheduling-enabled=true", "auth.outbox.poll-interval=200ms"])
-@Import(TestcontainersConfiguration::class, TestClockConfiguration::class)
+@Import(Containers::class, TestClockConfiguration::class)
 class OutboxSchedulerTest {
 
     @Autowired

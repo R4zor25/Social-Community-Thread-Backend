@@ -5,6 +5,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.Timestamp
 import java.time.Clock
 
+/** How another user appears in a response. */
+data class UserRef(val id: Long, val username: String)
+
 /** The service's read-only copy of users (id and username), kept current from user-events. */
 class UserProjections(private val jdbc: NamedParameterJdbcTemplate, private val clock: Clock = Clock.systemUTC()) {
 
@@ -35,4 +38,10 @@ class UserProjections(private val jdbc: NamedParameterJdbcTemplate, private val 
                 rs.getLong("user_id") to rs.getString("username")
             }.toMap()
         }
+
+    /** One query for all [userIds]. An id that is not projected yet still gets a reference, named "unknown". */
+    fun refs(userIds: Collection<Long>): (Long) -> UserRef {
+        val names = usernames(userIds)
+        return { UserRef(it, names[it] ?: "unknown") }
+    }
 }

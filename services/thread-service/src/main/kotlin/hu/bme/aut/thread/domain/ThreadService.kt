@@ -8,12 +8,12 @@ import hu.bme.aut.projection.UserProjections
 import hu.bme.aut.thread.persistence.FollowAndSaveRepository
 import hu.bme.aut.thread.persistence.ThreadImageRepository
 import hu.bme.aut.thread.persistence.ThreadRepository
-import java.time.Clock
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 
 @Service
 class ThreadService(

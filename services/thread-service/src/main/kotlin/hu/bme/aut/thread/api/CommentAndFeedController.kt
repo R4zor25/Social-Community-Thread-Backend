@@ -1,6 +1,7 @@
 package hu.bme.aut.thread.api
 
 import hu.bme.aut.common.web.paging.PageResponse
+import hu.bme.aut.common.web.paging.toBatchResponse
 import hu.bme.aut.common.web.security.CurrentUser
 import hu.bme.aut.thread.domain.PostService
 import hu.bme.aut.thread.domain.VoteService
@@ -33,5 +34,5 @@ class CommentAndFeedController(
     /** Posts of the threads the caller follows, newest first. */
     @GetMapping("/api/v2/feed")
     fun feed(caller: CurrentUser, pageable: Pageable): PageResponse<PostResponse> =
-        page(posts.feed(caller, pageable)) { assembler.posts(it, caller.id) }
+        posts.feed(caller, pageable).toBatchResponse { assembler.posts(it, caller.id) }
 }

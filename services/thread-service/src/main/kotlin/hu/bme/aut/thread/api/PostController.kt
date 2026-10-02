@@ -1,13 +1,13 @@
 package hu.bme.aut.thread.api
 
 import hu.bme.aut.common.web.paging.PageResponse
+import hu.bme.aut.common.web.paging.toBatchResponse
 import hu.bme.aut.common.web.security.CurrentUser
 import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.thread.domain.PostService
 import hu.bme.aut.thread.domain.VoteDirection
 import hu.bme.aut.thread.domain.VoteService
 import jakarta.validation.Valid
-import java.net.URI
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import java.net.URI
 
 @RestController
 @RequestMapping("/api/v2/posts")
@@ -37,7 +38,7 @@ class PostController(
         @RequestParam(defaultValue = "false") saved: Boolean,
         @RequestParam(required = false) voted: VoteDirection?,
         pageable: Pageable
-    ): PageResponse<PostResponse> = page(posts.search(caller, authorId, saved, voted, pageable)) { assembler.posts(it, caller.id) }
+    ): PageResponse<PostResponse> = posts.search(caller, authorId, saved, voted, pageable).toBatchResponse { assembler.posts(it, caller.id) }
 
     @GetMapping("/{id}")
     fun get(caller: CurrentUser, @PathVariable id: Long): PostResponse = assembler.posts(listOf(posts.get(id)), caller.id).single()
@@ -73,7 +74,7 @@ class PostController(
 
     @GetMapping("/{id}/comments")
     fun comments(caller: CurrentUser, @PathVariable id: Long, pageable: Pageable): PageResponse<CommentResponse> =
-        page(posts.comments(id, pageable)) { assembler.comments(it, caller.id) }
+        posts.comments(id, pageable).toBatchResponse { assembler.comments(it, caller.id) }
 
     @PostMapping("/{id}/comments")
     fun comment(caller: CurrentUser, @PathVariable id: Long, @Valid @RequestBody request: CreateCommentRequest): ResponseEntity<CommentResponse> {

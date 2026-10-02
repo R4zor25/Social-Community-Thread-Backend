@@ -4,16 +4,17 @@ import hu.bme.aut.events.UserEvents
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
 import org.springframework.kafka.config.TopicBuilder
 import org.testcontainers.kafka.KafkaContainer
 import org.testcontainers.postgresql.PostgreSQLContainer
 
 /**
- * PostgreSQL and Kafka for the integration tests of services that consume user-events.
- * Spring caches the test context, so the containers are shared by every test class with the same configuration.
+ * PostgreSQL and Kafka for integration tests, in the versions Compose runs. Spring caches the test context,
+ * so the containers are shared by every test class with the same configuration.
  */
 @TestConfiguration(proxyBeanMethods = false)
-class ServiceContainers {
+class Containers {
 
     @Bean
     @ServiceConnection
@@ -22,6 +23,12 @@ class ServiceContainers {
     @Bean
     @ServiceConnection
     fun kafka() = KafkaContainer("apache/kafka:4.3.1")
+}
+
+/** [Containers] plus the user-events topics, for the services that consume them. */
+@TestConfiguration(proxyBeanMethods = false)
+@Import(Containers::class)
+class ServiceContainers {
 
     // In production auth-service creates these topics; here the consumers need them to exist.
     @Bean

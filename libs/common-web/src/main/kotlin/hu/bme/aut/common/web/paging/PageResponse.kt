@@ -6,3 +6,7 @@ data class PageResponse<T>(val items: List<T>, val page: Int, val size: Int, val
 
 fun <T : Any, R> Page<T>.toResponse(mapper: (T) -> R) =
     PageResponse(content.map(mapper), number, size, totalElements, totalPages)
+
+/** Maps the whole page in one call, so the mapper can load what it needs for all items with one query each. */
+fun <T : Any, R> Page<T>.toBatchResponse(mapper: (List<T>) -> List<R>) =
+    PageResponse(mapper(content), number, size, totalElements, totalPages)

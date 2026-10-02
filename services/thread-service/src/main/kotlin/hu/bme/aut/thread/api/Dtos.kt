@@ -1,12 +1,11 @@
 package hu.bme.aut.thread.api
 
+import hu.bme.aut.projection.UserRef
 import hu.bme.aut.thread.domain.VoteDirection
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import java.time.Instant
-
-data class UserRef(val id: Long, val username: String)
 
 data class CreateThreadRequest(
     @field:NotBlank @field:Size(max = 100) val name: String,

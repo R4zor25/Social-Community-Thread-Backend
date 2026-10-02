@@ -9,12 +9,12 @@ import hu.bme.aut.common.web.error.NotFoundException
 import hu.bme.aut.common.web.security.CurrentUser
 import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.projection.UserProjections
-import java.time.Clock
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Clock
 
 /** Everything about a conversation is visible to and changeable by its participants only. */
 @Service

@@ -5,9 +5,9 @@ import hu.bme.aut.auth.domain.OutboxEvent
 import hu.bme.aut.auth.domain.RefreshToken
 import hu.bme.aut.auth.domain.Session
 import hu.bme.aut.auth.domain.User
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Modifying

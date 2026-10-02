@@ -3,9 +3,9 @@ package hu.bme.aut.friend.persistence
 import hu.bme.aut.friend.domain.FriendRequest
 import hu.bme.aut.friend.domain.Friendship
 import hu.bme.aut.friend.domain.FriendshipId
+import jakarta.persistence.LockModeType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query

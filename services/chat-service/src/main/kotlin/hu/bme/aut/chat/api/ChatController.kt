@@ -1,26 +1,19 @@
 package hu.bme.aut.chat.api
 
 import hu.bme.aut.chat.domain.ChatService
-import hu.bme.aut.chat.domain.Conversation
-import hu.bme.aut.chat.domain.Message
-import hu.bme.aut.chat.persistence.ConversationImageRepository
-import hu.bme.aut.chat.persistence.ParticipantRepository
 import hu.bme.aut.common.web.paging.PageResponse
+import hu.bme.aut.common.web.paging.toBatchResponse
 import hu.bme.aut.common.web.security.CurrentUser
 import hu.bme.aut.common.web.upload.Upload
-import hu.bme.aut.projection.UserProjections
+import hu.bme.aut.projection.UserRef
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
-import java.net.URI
-import java.time.Instant
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-
-data class UserRef(val id: Long, val username: String)
+import java.net.URI
+import java.time.Instant
 
 data class ConversationResponse(
     val id: Long,
@@ -56,32 +49,27 @@ data class AddParticipantsRequest(@field:NotEmpty @field:Size(max = 100) val use
 
 @RestController
 @RequestMapping("/api/v2/conversations")
-class ChatController(
-    private val chat: ChatService,
-    private val participants: ParticipantRepository,
-    private val images: ConversationImageRepository,
-    private val projections: UserProjections
-) {
+class ChatController(private val chat: ChatService, private val assembler: ChatResponseAssembler) {
     @GetMapping
-    fun list(caller: CurrentUser, pageable: Pageable): PageResponse<ConversationResponse> = page(chat.list(caller, pageable), ::toResponses)
+    fun list(caller: CurrentUser, pageable: Pageable): PageResponse<ConversationResponse> = chat.list(caller, pageable).toBatchResponse(assembler::conversations)
 
     @PostMapping
     fun create(caller: CurrentUser, @Valid @RequestBody request: CreateConversationRequest): ResponseEntity<ConversationResponse> {
         val conversation = chat.create(caller, request.name, request.participantIds)
-        return ResponseEntity.created(URI("/api/v2/conversations/${conversation.id}")).body(toResponses(listOf(conversation)).single())
+        return ResponseEntity.created(URI("/api/v2/conversations/${conversation.id}")).body(assembler.conversations(listOf(conversation)).single())
     }
 
     @GetMapping("/{id}")
-    fun get(caller: CurrentUser, @PathVariable id: Long): ConversationResponse = toResponses(listOf(chat.get(caller, id))).single()
+    fun get(caller: CurrentUser, @PathVariable id: Long): ConversationResponse = assembler.conversations(listOf(chat.get(caller, id))).single()
 
     @GetMapping("/{id}/messages")
     fun messages(caller: CurrentUser, @PathVariable id: Long, pageable: Pageable): PageResponse<MessageResponse> =
-        page(chat.messages(caller, id, pageable), ::toMessageResponses)
+        chat.messages(caller, id, pageable).toBatchResponse(assembler::messages)
 
     @PostMapping("/{id}/messages")
     fun send(caller: CurrentUser, @PathVariable id: Long, @Valid @RequestBody request: SendMessageRequest): ResponseEntity<MessageResponse> {
         val message = chat.send(caller, id, request.body)
-        return ResponseEntity.created(URI("/api/v2/conversations/$id/messages")).body(toMessageResponses(listOf(message)).single())
+        return ResponseEntity.created(URI("/api/v2/conversations/$id/messages")).body(assembler.messages(listOf(message)).single())
     }
 
     @PostMapping("/{id}/participants")
@@ -100,28 +88,4 @@ class ChatController(
     @GetMapping("/{id}/image")
     fun image(caller: CurrentUser, @PathVariable id: Long): ResponseEntity<ByteArray> =
         chat.image(caller, id).let { ResponseEntity.ok().contentType(MediaType.parseMediaType(it.contentType)).body(it.content) }
-
-    /** One query each for participants, usernames and images per page. */
-    @Transactional(readOnly = true)
-    fun toResponses(conversations: List<Conversation>): List<ConversationResponse> {
-        if (conversations.isEmpty()) return emptyList()
-        val ids = conversations.map { requireNotNull(it.id) }
-        val members = participants.participantsOf(ids).groupBy({ it[0] as Long }, { it[1] as Long })
-        val names = projections.usernames(members.values.flatten() + conversations.map { it.creatorId })
-        val withImage = images.withImageAmong(ids).toSet()
-        fun ref(userId: Long) = UserRef(userId, names[userId] ?: "unknown")
-        return conversations.map {
-            ConversationResponse(
-                it.id!!, it.name, ref(it.creatorId), members[it.id].orEmpty().map(::ref), it.createdAt, it.lastMessageAt, it.id in withImage
-            )
-        }
-    }
-
-    private fun toMessageResponses(messages: List<Message>): List<MessageResponse> {
-        val names = projections.usernames(messages.map { it.authorId })
-        return messages.map { MessageResponse(it.id!!, it.conversationId, UserRef(it.authorId, names[it.authorId] ?: "unknown"), it.body, it.sentAt) }
-    }
-
-    private fun <T : Any, R> page(page: Page<T>, mapper: (List<T>) -> List<R>) =
-        PageResponse(mapper(page.content), page.number, page.size, page.totalElements, page.totalPages)
 }

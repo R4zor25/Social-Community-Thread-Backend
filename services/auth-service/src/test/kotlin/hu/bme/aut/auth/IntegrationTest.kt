@@ -1,7 +1,7 @@
 package hu.bme.aut.auth
 
+import hu.bme.aut.testsupport.Containers
 import org.junit.jupiter.api.BeforeEach
-import java.time.Duration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
@@ -10,11 +10,12 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
+import java.time.Duration
 
 /** Real PostgreSQL and Kafka, one shared Spring context; tables are emptied before each test. */
 @SpringBootTest(properties = ["auth.outbox.scheduling-enabled=false"])
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration::class, TestClockConfiguration::class)
+@Import(Containers::class, TestClockConfiguration::class)
 abstract class IntegrationTest {
 
     @Autowired
