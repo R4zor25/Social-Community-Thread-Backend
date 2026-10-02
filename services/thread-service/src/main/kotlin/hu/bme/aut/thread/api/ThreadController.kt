@@ -2,12 +2,13 @@ package hu.bme.aut.thread.api
 
 import hu.bme.aut.common.web.paging.PageResponse
 import hu.bme.aut.common.web.security.CurrentUser
+import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.thread.domain.PostService
 import hu.bme.aut.thread.domain.ThreadService
 import jakarta.validation.Valid
+import java.net.URI
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -18,12 +19,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 
 @RestController
 @RequestMapping("/api/v2/threads")
@@ -67,8 +66,7 @@ class ThreadController(
 
     @PutMapping("/{id}/image", consumes = ["image/*"])
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun setImage(caller: CurrentUser, @PathVariable id: Long, @RequestBody content: ByteArray, @RequestHeader(HttpHeaders.CONTENT_TYPE) type: String) =
-        threads.setImage(caller, id, content, type)
+    fun setImage(caller: CurrentUser, @PathVariable id: Long, upload: Upload) = threads.setImage(caller, id, upload)
 
     @GetMapping("/{id}/image")
     fun image(@PathVariable id: Long): ResponseEntity<ByteArray> =

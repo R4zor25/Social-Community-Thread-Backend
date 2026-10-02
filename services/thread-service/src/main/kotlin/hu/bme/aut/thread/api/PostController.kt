@@ -2,12 +2,13 @@ package hu.bme.aut.thread.api
 
 import hu.bme.aut.common.web.paging.PageResponse
 import hu.bme.aut.common.web.security.CurrentUser
+import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.thread.domain.PostService
 import hu.bme.aut.thread.domain.VoteDirection
 import hu.bme.aut.thread.domain.VoteService
 import jakarta.validation.Valid
+import java.net.URI
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -17,12 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 
 @RestController
 @RequestMapping("/api/v2/posts")
@@ -66,8 +65,7 @@ class PostController(
 
     @PutMapping("/{id}/attachment", consumes = ["image/*", "video/*"])
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun setAttachment(caller: CurrentUser, @PathVariable id: Long, @RequestBody content: ByteArray, @RequestHeader(HttpHeaders.CONTENT_TYPE) type: String) =
-        posts.setAttachment(caller, id, content, type)
+    fun setAttachment(caller: CurrentUser, @PathVariable id: Long, upload: Upload) = posts.setAttachment(caller, id, upload)
 
     @GetMapping("/{id}/attachment")
     fun attachment(@PathVariable id: Long): ResponseEntity<ByteArray> =

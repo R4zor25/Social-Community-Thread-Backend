@@ -25,7 +25,7 @@ class AuthController(private val registration: RegistrationService, private val 
         return ResponseEntity.created(URI("/api/v2/users/$id")).body(UserResponse(id, user.username))
     }
 
-    /** The client IP is the remote address after X-Forwarded-For from the gateway has been applied. */
+    /** The client address comes from X-Forwarded-For, which the gateway sets to the address it was connected from. */
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest, servletRequest: HttpServletRequest): TokenResponse =
         sessions.login(request.username, request.password, servletRequest.remoteAddr).toResponse()

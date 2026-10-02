@@ -1,2 +1,3 @@
 hu.bme.aut.common.web.WebAutoConfiguration
 hu.bme.aut.common.web.security.ResourceServerAutoConfiguration
+hu.bme.aut.common.web.security.TokenValidationSettingsAutoConfiguration

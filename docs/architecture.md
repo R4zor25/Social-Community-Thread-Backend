@@ -47,7 +47,7 @@ flowchart LR
 
 | Component | Responsibility |
 |---|---|
-| `gateway` | Single entry point. Validates the access token, routes `/api/v2/**` by path prefix, and rejects requests larger than 6 MB (`413`), which leaves room for a 5 MB upload. |
+| `gateway` | Single entry point. Validates the access token, routes `/api/v2/**` by path prefix, and rejects requests whose declared size is over 6 MB (`413`). It sets `X-Forwarded-For` to the client's address, replacing any value the client sent. |
 | `auth-service` | Identity: registration, login, sessions and refresh tokens, user profiles and avatars. Issues tokens, publishes the JWKS, and publishes user events. |
 | `thread-service` | Topic threads, posts, comments, votes, saved posts, followed threads, the feed. |
 | `friend-service` | Friend requests and friendships. |
@@ -120,7 +120,7 @@ Only participants can read a conversation, send to it or change its participants
 
 ### Binary content
 
-Avatars, thread images, post attachments and conversation images stay in the owning service's database as `bytea`. They are uploaded and downloaded as separate binary resources, limited to `image/*` (post attachments also allow `video/*`) and 5 MB. Only the media type is stored, without parameters such as `charset`. Moving them to object storage is a next step.
+Avatars, thread images, post attachments and conversation images stay in the owning service's database as `bytea`. They are uploaded and downloaded as separate binary resources, limited to `image/*` (post attachments also allow `video/*`) and 5 MB. A service reads at most 5 MB of an upload, also when the client sends no `Content-Length`. Only the media type is stored, without parameters such as `charset`. Moving them to object storage is a next step.
 
 ## Events
 
@@ -147,8 +147,8 @@ A user who has just registered may call another service before the event arrives
 | Refresh token | 256-bit random opaque value. Only its SHA-256 hash is stored. Lifetime 7 days, rotated on every refresh. If a token that was already used is presented again, every session of that user is revoked. |
 | Logout | `POST /api/v2/auth/logout` with the refresh token revokes that session. Access tokens expire on their own. |
 | Passwords | BCrypt through `DelegatingPasswordEncoder`. |
-| Registration rules | Username of 3–32 characters (letters, digits, `_`, `.`, `-`), a valid email address, and a password of 8–128 characters. A taken username or email returns `409`. |
-| Login throttling | After 5 failed logins for a username, or 20 from one IP address, within 15 minutes, further attempts get `429` with `Retry-After`. Failed logins return `401`. The counters are in memory, so they apply per instance. |
+| Registration rules | Username of 3–32 characters (letters, digits, `_`, `.`, `-`), a valid email address, and a password of at least 8 characters and at most 72 bytes in UTF-8 (BCrypt's limit). A taken username or email returns `409`. |
+| Login throttling | After 5 failed logins for a username, or 20 from one IP address, within 15 minutes, further attempts get `429` with `Retry-After`. Failed logins return `401`. The counters are in memory, so they apply per instance, and expired ones are dropped every minute. The client address is the `X-Forwarded-For` value set by the gateway; auth-service trusts it because only the gateway can reach it. |
 | Authorization | Ownership and membership checks live in the owning service next to the data: thread creator, post author, conversation participant, friend request recipient or sender. |
 
 ## API (v2)

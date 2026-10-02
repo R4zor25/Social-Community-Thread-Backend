@@ -1,5 +1,8 @@
 package hu.bme.aut.common.web
 
+import org.springframework.test.web.servlet.put
+import org.springframework.web.bind.annotation.PutMapping
+import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.common.web.error.ConflictException
 import hu.bme.aut.common.web.error.ForbiddenException
 import hu.bme.aut.common.web.error.NotFoundException
@@ -43,6 +46,7 @@ class TestController {
     @GetMapping("/test/page") fun page(pageable: Pageable): PageResponse<String> =
         PageImpl(listOf("a", "b"), pageable, 42).toResponse { it.uppercase() }
     @PostMapping("/test/validated") fun validated(@Valid @RequestBody body: Body) = body
+    @PutMapping("/test/upload", consumes = ["image/*"]) fun upload(upload: Upload) = mapOf("size" to upload.content.size, "type" to upload.contentType)
 
     data class Body(@field:NotBlank val name: String)
 }
@@ -121,5 +125,22 @@ class CommonWebTest @Autowired constructor(val mockMvc: MockMvc) {
             jsonPath("$.totalPages") { value(3) }
         }
         mockMvc.get("/test/page?size=1000") { with(alice) }.andExpect { jsonPath("$.size") { value(100) } }
+    }
+
+    @Test
+    fun uploadsKeepOnlyTypeAndSubtype() {
+        mockMvc.put("/test/upload") { with(alice); contentType = MediaType.parseMediaType("image/png;charset=UTF-8"); content = ByteArray(3) }.andExpect {
+            status { isOk() }
+            jsonPath("$.size") { value(3) }
+            jsonPath("$.type") { value("image/png") }
+        }
+    }
+
+    @Test
+    fun uploadsOverFiveMegabytesAre413() {
+        mockMvc.put("/test/upload") { with(alice); contentType = MediaType.IMAGE_PNG; content = ByteArray(5 * 1024 * 1024 + 1) }.andExpect {
+            status { isContentTooLarge() }
+            jsonPath("$.detail") { value("Uploads are limited to 5 MB") }
+        }
     }
 }

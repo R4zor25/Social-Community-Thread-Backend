@@ -62,6 +62,16 @@ class RegistrationTest : IntegrationTest() {
         assertThat(jdbc.queryForObject("select count(*) from users", Long::class.java)).isZero()
     }
 
+    /** BCrypt uses only the first 72 bytes; longer passwords are rejected instead of failing with 500. */
+    @Test
+    fun passwordsOver72BytesAreRejected() {
+        register("alice", "alice@example.com", "é".repeat(37)).andExpect {
+            status { isBadRequest() }
+            jsonPath("$.errors[0].field") { value("password") }
+        }
+        register("alice", "alice@example.com", "a".repeat(72)).andExpect { status { isCreated() } }
+    }
+
     @Test
     fun takenUsernameIsAConflictIgnoringCase() {
         register("alice", "alice@example.com").andExpect { status { isCreated() } }

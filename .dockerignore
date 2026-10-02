@@ -1,6 +1,10 @@
 **/target/
 .git/
+.github/
 .idea/
-.env
-htmlReport/
 *.iml
+.env
+secrets/
+docs/
+*.md
+.superpowers/

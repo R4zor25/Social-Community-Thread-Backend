@@ -1,5 +1,6 @@
 package hu.bme.aut.gateway
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 
@@ -51,5 +52,18 @@ class GatewayRoutingTest : GatewayTestSupport() {
             .bodyValue(ByteArray(5 * 1024 * 1024))
             .exchange()
             .expectStatus().isOk
+    }
+
+    /** auth-service throttles logins per client address, so the gateway must pass on the real one and only that. */
+    @Test
+    fun theBackendSeesTheClientAddressNotOneTheClientClaims() {
+        client.post().uri("/api/v2/auth/login")
+            .header("X-Forwarded-For", "203.0.113.66")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("""{"username":"a","password":"b"}""")
+            .exchange()
+            .expectStatus().isOk
+
+        assertThat(backends.getValue("auth").forwardedFor).containsExactly("127.0.0.1")
     }
 }

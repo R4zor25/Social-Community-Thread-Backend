@@ -2,6 +2,7 @@ package hu.bme.aut.common.web
 
 import hu.bme.aut.common.web.error.ProblemDetailsHandler
 import hu.bme.aut.common.web.security.CurrentUserArgumentResolver
+import hu.bme.aut.common.web.upload.UploadArgumentResolver
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
@@ -22,6 +23,7 @@ class WebAutoConfiguration : WebMvcConfigurer {
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(CurrentUserArgumentResolver())
+        resolvers.add(UploadArgumentResolver())
     }
 
     @Configuration(proxyBeanMethods = false)

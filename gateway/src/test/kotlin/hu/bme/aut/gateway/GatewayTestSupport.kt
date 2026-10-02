@@ -23,6 +23,7 @@ import java.util.Date
 /** A backend stand-in that records what reached it and answers with its own name. */
 class StubBackend(val name: String) {
     val requests = mutableListOf<Pair<String, String?>>()
+    val forwardedFor = mutableListOf<String?>()
     private val server = HttpServer.create(InetSocketAddress("localhost", 0), 0).apply {
         createContext("/.well-known/jwks.json") { exchange ->
             val body = JWKSet(signingKey.toPublicJWK()).toString().toByteArray()
@@ -32,7 +33,10 @@ class StubBackend(val name: String) {
         }
         createContext("/") { exchange ->
             exchange.requestBody.readAllBytes()
-            synchronized(requests) { requests += exchange.requestURI.path to exchange.requestHeaders.getFirst("Authorization") }
+            synchronized(requests) {
+                requests += exchange.requestURI.path to exchange.requestHeaders.getFirst("Authorization")
+                forwardedFor += exchange.requestHeaders["X-Forwarded-For"]?.joinToString(",")
+            }
             val body = """{"backend":"$name"}""".toByteArray()
             exchange.responseHeaders.add("Content-Type", "application/json")
             exchange.sendResponseHeaders(200, body.size.toLong())
@@ -58,7 +62,7 @@ abstract class GatewayTestSupport {
     @BeforeEach
     fun setUpClient() {
         client = WebTestClient.bindToServer().baseUrl("http://localhost:$port").responseTimeout(Duration.ofSeconds(30)).build()
-        backends.values.forEach { synchronized(it.requests) { it.requests.clear() } }
+        backends.values.forEach { synchronized(it.requests) { it.requests.clear(); it.forwardedFor.clear() } }
     }
 
     fun token(

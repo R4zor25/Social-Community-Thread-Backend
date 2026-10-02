@@ -2,13 +2,11 @@ package hu.bme.aut.auth.domain
 
 import hu.bme.aut.auth.persistence.AvatarRepository
 import hu.bme.aut.auth.persistence.UserRepository
-import hu.bme.aut.common.web.error.ApiException
 import hu.bme.aut.common.web.error.NotFoundException
+import hu.bme.aut.common.web.upload.Upload
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,24 +21,17 @@ class UserProfileService(private val users: UserRepository, private val avatars:
         users.findByUsernameStartingWithIgnoreCaseOrderByUsernameAsc(usernamePrefix, pageable)
 
     @Transactional
-    fun setAvatar(userId: Long, content: ByteArray, rawContentType: String) {
-        if (content.size > MAX_IMAGE_BYTES) throw ApiException(HttpStatus.CONTENT_TOO_LARGE, "Images are limited to 5 MB")
-        // Only type/subtype is stored, so parameters a client sends (e.g. charset) never reach the response.
-        val contentType = MediaType.parseMediaType(rawContentType).let { "${it.type}/${it.subtype}" }
+    fun setAvatar(userId: Long, upload: Upload) {
         find(userId)
         val avatar = avatars.findByIdOrNull(userId)
         if (avatar == null) {
-            avatars.save(Avatar(userId, content, contentType))
+            avatars.save(Avatar(userId, upload.content, upload.contentType))
         } else {
-            avatar.content = content
-            avatar.contentType = contentType
+            avatar.content = upload.content
+            avatar.contentType = upload.contentType
         }
     }
 
     @Transactional(readOnly = true)
     fun avatar(userId: Long): Avatar = avatars.findByIdOrNull(userId) ?: throw NotFoundException("User has no avatar")
-
-    companion object {
-        const val MAX_IMAGE_BYTES = 5 * 1024 * 1024
-    }
 }

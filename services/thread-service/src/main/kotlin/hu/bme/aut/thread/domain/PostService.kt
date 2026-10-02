@@ -3,18 +3,19 @@ package hu.bme.aut.thread.domain
 import hu.bme.aut.common.web.error.ForbiddenException
 import hu.bme.aut.common.web.error.NotFoundException
 import hu.bme.aut.common.web.security.CurrentUser
+import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.projection.UserProjections
 import hu.bme.aut.thread.persistence.CommentRepository
 import hu.bme.aut.thread.persistence.FollowAndSaveRepository
 import hu.bme.aut.thread.persistence.PostAttachmentRepository
 import hu.bme.aut.thread.persistence.PostRepository
 import hu.bme.aut.thread.persistence.ThreadRepository
+import java.time.Clock
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Clock
 
 @Service
 class PostService(
@@ -69,16 +70,14 @@ class PostService(
     }
 
     @Transactional
-    fun setAttachment(caller: CurrentUser, id: Long, content: ByteArray, rawContentType: String) {
-        requireUploadSize(content)
-        val contentType = mediaTypeOf(rawContentType)
+    fun setAttachment(caller: CurrentUser, id: Long, upload: Upload) {
         authoredBy(caller, id)
         val attachment = attachments.findByIdOrNull(id)
         if (attachment == null) {
-            attachments.save(PostAttachment(id, content, contentType))
+            attachments.save(PostAttachment(id, upload.content, upload.contentType))
         } else {
-            attachment.content = content
-            attachment.contentType = contentType
+            attachment.content = upload.content
+            attachment.contentType = upload.contentType
         }
     }
 

@@ -4,19 +4,17 @@ import hu.bme.aut.chat.persistence.ConversationImageRepository
 import hu.bme.aut.chat.persistence.ConversationRepository
 import hu.bme.aut.chat.persistence.MessageRepository
 import hu.bme.aut.chat.persistence.ParticipantRepository
-import hu.bme.aut.common.web.error.ApiException
 import hu.bme.aut.common.web.error.ForbiddenException
 import hu.bme.aut.common.web.error.NotFoundException
 import hu.bme.aut.common.web.security.CurrentUser
+import hu.bme.aut.common.web.upload.Upload
 import hu.bme.aut.projection.UserProjections
+import java.time.Clock
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Clock
 
 /** Everything about a conversation is visible to and changeable by its participants only. */
 @Service
@@ -80,16 +78,14 @@ class ChatService(
     }
 
     @Transactional
-    fun setImage(caller: CurrentUser, conversationId: Long, content: ByteArray, rawContentType: String) {
-        if (content.size > MAX_IMAGE_BYTES) throw ApiException(HttpStatus.CONTENT_TOO_LARGE, "Images are limited to 5 MB")
+    fun setImage(caller: CurrentUser, conversationId: Long, upload: Upload) {
         participantOf(caller, conversationId)
-        val contentType = MediaType.parseMediaType(rawContentType).let { "${it.type}/${it.subtype}" }
         val image = images.findByIdOrNull(conversationId)
         if (image == null) {
-            images.save(ConversationImage(conversationId, content, contentType))
+            images.save(ConversationImage(conversationId, upload.content, upload.contentType))
         } else {
-            image.content = content
-            image.contentType = contentType
+            image.content = upload.content
+            image.contentType = upload.contentType
         }
     }
 
@@ -107,9 +103,5 @@ class ChatService(
 
     private fun requireKnown(userIds: Set<Long>) {
         if (projections.usernames(userIds).size != userIds.size) throw NotFoundException("User does not exist")
-    }
-
-    companion object {
-        const val MAX_IMAGE_BYTES = 5 * 1024 * 1024
     }
 }
