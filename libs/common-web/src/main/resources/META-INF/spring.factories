@@ -1,0 +1,2 @@
+org.springframework.boot.EnvironmentPostProcessor=\
+hu.bme.aut.common.web.ServiceDefaults

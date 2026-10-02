@@ -48,7 +48,7 @@ flowchart LR
 - **No trusted headers.** auth-service signs RS256 tokens (15 minutes, `iss`, `aud`, `kid`) and serves the public key at `/.well-known/jwks.json`, which the gateway does not route. The gateway and every service are OAuth2 resource servers and check the signature, expiry, issuer and audience themselves. When the key set cannot be fetched, the answer is `503`, not `401` or `500`.
 - **Sessions.** Each login creates a session with a 256-bit refresh token, stored only as its SHA-256 hash, valid for 7 days and rotated on every refresh. Presenting a used token again revokes all of that user's sessions. Logins are throttled: 5 failures per username or 20 per client address within 15 minutes give `429` with `Retry-After`. The gateway sets `X-Forwarded-For` to the address it was connected from, so a client cannot choose its own.
 - **Authorization next to the data.** For example, only a thread's creator may change it, only participants see a conversation, and only the recipient may accept a friend request. The caller always comes from the token, never from a path or body. Ids, authors, scores and timestamps in request bodies are ignored. Other users' email addresses are never returned.
-- **Consistent API.** Errors are RFC 7807 `ProblemDetail`s, with field errors on validation failures. Lists are paged (`?page=&size=`, default size 20, maximum 100) and responses are assembled with one batch query per page instead of N+1 queries. Votes, follows, saves and adding participants are idempotent: `PUT` sets and `DELETE` clears. Concurrent votes are serialized with a row lock.
+- **Consistent API.** Errors are RFC 7807 `ProblemDetail`s, with field errors on validation failures. Lists are paged (`?page=&size=`, default size 20, maximum 100) in a fixed order (`sort` gives `400`) and responses are assembled with one batch query per page instead of N+1 queries. Votes, follows, saves and adding participants are idempotent: `PUT` sets and `DELETE` clears. Concurrent votes are serialized with a row lock.
 
 ## API
 
@@ -90,7 +90,7 @@ scripts/smoke-test.sh
 docker compose down -v            # stop and remove the volumes
 ```
 
-Compose starts PostgreSQL (one instance with one database and one user per service), Kafka (a single KRaft node), the four services and the gateway on `http://localhost:8080`. A service starts only when its database and Kafka are healthy, and it fails at startup when required configuration is missing.
+Compose starts PostgreSQL (one instance with one database and one user per service), Kafka (a single KRaft node), the four services and the gateway on `http://localhost:8080`. A service starts only when its database and Kafka are healthy, it fails at startup when required configuration is missing, and its readiness turns `DOWN` while its database is unreachable.
 
 `scripts/smoke-test.sh` runs about 50 checks through the gateway:
 

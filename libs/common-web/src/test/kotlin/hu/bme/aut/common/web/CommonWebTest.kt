@@ -143,4 +143,13 @@ class CommonWebTest @Autowired constructor(val mockMvc: MockMvc) {
             jsonPath("$.detail") { value("Uploads are limited to 5 MB") }
         }
     }
+
+    /** Each list has one fixed order; a client-chosen sort would reach the query and fail there. */
+    @Test
+    fun sortingIsRejected() {
+        mockMvc.get("/test/page?sort=name,desc") { with(alice) }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.detail") { value("Sorting is fixed for every list; use page and size only") }
+        }
+    }
 }

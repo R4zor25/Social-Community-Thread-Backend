@@ -158,7 +158,7 @@ Conventions:
 - Every path is under `/api/v2`, and each path prefix belongs to exactly one service.
 - The caller is always taken from the token. User ids never identify the caller in a path.
 - Paths are nouns, without verbs.
-- Lists are paged with `?page=&size=` (default 0 and 20, maximum 100) and return `{ items, page, size, totalItems, totalPages }`.
+- Lists are paged with `?page=&size=` (default 0 and 20, maximum 100) and return `{ items, page, size, totalItems, totalPages }`. Each list has a fixed order, and a `sort` parameter is rejected with `400`.
 - Errors use RFC 7807 `ProblemDetail`, with field errors for validation failures.
 - Requests and responses are DTOs. Timestamps are ISO-8601 and ids are numbers.
 - Each service publishes an OpenAPI document (springdoc).
@@ -193,7 +193,7 @@ scripts/                   generate-keys.sh, smoke-test.sh
 
 - **Versions.** The exact versions are pinned once, in `build/parent`. Kotlin uses the `spring` and `jpa` compiler plugins, and all-open covers `@Entity`, `@MappedSuperclass` and `@Embeddable`. Lombok is not used.
 - **Package layout.** Packages are organized per service by layer: `api` (controllers, DTOs), `domain` (entities, services, rules), `persistence` (repositories), `messaging` (publisher, consumers). For example: `hu.bme.aut.thread.domain`.
-- **Compose.** It runs `postgres` (one instance, four databases), `kafka` (single node, KRaft) and the four services, then the gateway. Only the gateway publishes a port to the host, `8080`, and every service listens on `8080` inside its container. Readiness covers the database and Kafka. Missing required configuration stops a service at startup.
+- **Compose.** It runs `postgres` (one instance, four databases), `kafka` (single node, KRaft) and the four services, then the gateway. Only the gateway publishes a port to the host, `8080`, and every service listens on `8080` inside its container. A service's readiness includes its database (`common-web` sets this default). Kafka is not part of it, because Spring Boot has no Kafka health indicator; the consumers reconnect on their own. Missing required configuration stops a service at startup.
 - **Image.** One parameterized multi-stage `Dockerfile` (`ARG MODULE`) on `eclipse-temurin:21`, running as a non-root user.
 - **CI.**
   - `./mvnw verify`, with Testcontainers,
