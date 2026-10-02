@@ -6,6 +6,7 @@ import hu.bme.aut.events.UserEvents
 import hu.bme.aut.events.UserRegistered
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
@@ -70,18 +71,22 @@ abstract class ProjectionTestSupport {
         return null
     }
 
+    /** Everything on the dead-letter topic right now: reads every partition from the start up to its end offset. */
     fun deadLetters(): List<String> = KafkaConsumer<String, String>(
         mapOf(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to kafkaConnection.bootstrapServers.joinToString(","),
-            ConsumerConfig.GROUP_ID_CONFIG to "dlt-reader-${UUID.randomUUID()}",
-            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java
         )
     ).use { consumer ->
-        consumer.subscribe(listOf(UserEvents.DEAD_LETTER_TOPIC))
+        val partitions = consumer.partitionsFor(UserEvents.DEAD_LETTER_TOPIC).map { TopicPartition(it.topic(), it.partition()) }
+        consumer.assign(partitions)
+        consumer.seekToBeginning(partitions)
+        val end = consumer.endOffsets(partitions)
         val values = mutableListOf<String>()
-        repeat(10) { consumer.poll(Duration.ofMillis(500)).forEach { values += it.value() } }
+        while (partitions.any { consumer.position(it) < end.getValue(it) }) {
+            consumer.poll(Duration.ofMillis(500)).forEach { values += it.value() }
+        }
         values
     }
 }

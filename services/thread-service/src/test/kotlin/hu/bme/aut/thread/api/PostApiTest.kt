@@ -87,9 +87,11 @@ class PostApiTest : IntegrationTest() {
         val thread = createThread()
         val post = createPost(thread, as_ = alice)
         val other = createPost(thread, as_ = bob)
-        createComment(post, as_ = bob)
-        vote(post, "UP", bob)
-        mockMvc.put("/api/v2/posts/$post/save") { with(bob) }
+        listOf(post, other).forEach {
+            createComment(it, as_ = bob)
+            vote(it, "UP", bob)
+            mockMvc.put("/api/v2/posts/$it/save") { with(bob) }
+        }
 
         mockMvc.delete("/api/v2/posts/$post") { with(bob) }.andExpect {
             status { isForbidden() }
@@ -98,7 +100,9 @@ class PostApiTest : IntegrationTest() {
         mockMvc.delete("/api/v2/posts/$post") { with(alice) }.andExpect { status { isNoContent() } }
 
         assertThat(jdbc.queryForList("select id from posts", Long::class.java)).containsExactly(other)
-        listOf("comments", "post_votes", "saved_posts").forEach { assertThat(count(it)).describedAs(it).isZero() }
+        listOf("comments", "post_votes", "saved_posts").forEach {
+            assertThat(jdbc.queryForList("select post_id from $it", Long::class.java)).describedAs(it).containsExactly(other)
+        }
         assertThat(count("threads")).isEqualTo(1)
         assertThat(count("user_projection")).isEqualTo(2)
     }

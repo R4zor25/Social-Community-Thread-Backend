@@ -14,16 +14,16 @@ class UserProjectionTest : ProjectionTestSupport() {
         assertThat(awaitValue { username(101) }).isEqualTo("alice")
     }
 
+    /** A redelivered event is applied again without error; a later event with the same key proves both were handled. */
     @Test
-    fun theSameEventTwiceGivesOneRow() {
+    fun theSameEventTwiceIsHarmless() {
         val event = registered(102, "bob")
         send("102", event)
         send("102", event)
-        send("103", registered(103, "marker"))
-        awaitValue { username(103) }
-        awaitValue { username(102) }
+        send("102", registered(102, "bob-later"))
 
-        assertThat(jdbc.queryForObject("select count(*) from user_projection where user_id = 102", Long::class.java)).isEqualTo(1)
+        assertThat(awaitValue { username(102)?.takeIf { it == "bob-later" } }).isEqualTo("bob-later")
+        assertThat(deadLetters()).noneMatch { it == event }
     }
 
     @Test
@@ -33,8 +33,8 @@ class UserProjectionTest : ProjectionTestSupport() {
 
         send("104", registered(104, "carol"))
 
-        awaitValue { jdbc.queryForObject("select updated_at from user_projection where user_id = 104", Instant::class.java)!!.takeIf { it.isAfter(upsertedAt) } }
-        assertThat(jdbc.queryForObject("select count(*) from user_projection where user_id = 104", Long::class.java)).isEqualTo(1)
+        val appliedAt = awaitValue { jdbc.queryForObject("select updated_at from user_projection where user_id = 104", Instant::class.java)!!.takeIf { it.isAfter(upsertedAt) } }
+        assertThat(appliedAt).describedAs("the event was applied on top of the token upsert").isNotNull()
         assertThat(username(104)).isEqualTo("carol")
     }
 

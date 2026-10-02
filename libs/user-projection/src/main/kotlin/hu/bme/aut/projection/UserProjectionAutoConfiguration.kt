@@ -12,7 +12,8 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.listener.CommonErrorHandler
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer
 import org.springframework.kafka.listener.DefaultErrorHandler
-import org.springframework.util.backoff.FixedBackOff
+import org.springframework.util.backoff.ExponentialBackOff
+import tools.jackson.core.JacksonException
 
 @AutoConfiguration
 @ConditionalOnClass(KafkaTemplate::class, NamedParameterJdbcTemplate::class)
@@ -24,7 +25,11 @@ class UserProjectionAutoConfiguration {
     @Bean
     fun userEventsConsumer(projections: UserProjections) = UserEventsConsumer(projections)
 
-    /** Three retries a second apart, then the record goes to the dead-letter topic so later events are not blocked. */
+    /**
+     * A malformed record (not JSON, no type, a payload that does not fit) goes to the dead-letter topic at once, so later
+     * events are not blocked by it. Any other failure, such as the database being down, is not the event's fault: it is
+     * retried with growing pauses (at most 30 s apart) until it succeeds, keeping the order of the user's events.
+     */
     @Bean
     @ConditionalOnMissingBean(CommonErrorHandler::class)
     fun userEventsErrorHandler(template: KafkaTemplate<*, *>): CommonErrorHandler {
@@ -32,6 +37,9 @@ class UserProjectionAutoConfiguration {
         val recoverer = DeadLetterPublishingRecoverer(template as KafkaOperations<Any, Any>) { record, _ ->
             TopicPartition(UserEvents.DEAD_LETTER_TOPIC, record.partition())
         }
-        return DefaultErrorHandler(recoverer, FixedBackOff(1000L, 3))
+        val backOff = ExponentialBackOff(1000L, 2.0).apply { maxInterval = 30_000L }
+        return DefaultErrorHandler(recoverer, backOff).apply {
+            addNotRetryableExceptions(JacksonException::class.java, IllegalArgumentException::class.java)
+        }
     }
 }

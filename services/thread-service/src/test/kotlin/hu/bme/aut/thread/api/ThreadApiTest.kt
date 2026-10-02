@@ -117,13 +117,16 @@ class ThreadApiTest : IntegrationTest() {
     fun deletingAThreadKeepsUsersAndOtherThreads() {
         val kotlin = createThread(name = "Kotlin")
         val java = createThread(name = "Java")
-        val post = createPost(kotlin, as_ = bob)
-        createComment(post, as_ = alice)
+        val posts = listOf(kotlin, java).map { thread ->
+            createPost(thread, as_ = bob).also { createComment(it, as_ = alice) }
+        }
+        listOf(kotlin, java).forEach { mockMvc.put("/api/v2/threads/$it/follow") { with(bob) } }
 
         mockMvc.delete("/api/v2/threads/$kotlin") { with(alice) }.andExpect { status { isNoContent() } }
 
-        assertThat(count("posts")).isZero()
-        assertThat(count("comments")).isZero()
+        assertThat(jdbc.queryForList("select id from posts", Long::class.java)).containsExactly(posts[1])
+        assertThat(jdbc.queryForList("select post_id from comments", Long::class.java)).containsExactly(posts[1])
+        assertThat(jdbc.queryForList("select thread_id from thread_followers", Long::class.java)).containsExactly(java)
         assertThat(jdbc.queryForList("select id from threads", Long::class.java)).containsExactly(java)
         assertThat(count("user_projection")).isEqualTo(2)
     }

@@ -12,7 +12,8 @@ object EventJson {
 
     fun write(envelope: EventEnvelope<*>): String = mapper.writeValueAsString(envelope)
 
-    fun typeOf(json: String): String = mapper.readTree(json).get("type").asString()
+    /** Throws IllegalArgumentException when the record has no type, so it is treated as malformed. */
+    fun typeOf(json: String): String = requireNotNull(mapper.readTree(json).get("type")?.asString()) { "Event has no type" }
 
     fun <T : Any> read(json: String, payloadType: Class<T>): EventEnvelope<T> =
         mapper.readValue(json, mapper.typeFactory.constructParametricType(EventEnvelope::class.java, payloadType))

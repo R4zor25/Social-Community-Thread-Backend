@@ -1,6 +1,7 @@
 package hu.bme.aut.events
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
@@ -38,5 +39,10 @@ class EventJsonTest {
     fun ignoresUnknownFieldsSoProducersCanAddFields() {
         val extended = fixture.replace("\"username\": \"alice\"", "\"username\": \"alice\", \"displayName\": \"Alice\"")
         assertThat(EventJson.read(extended, UserRegistered::class.java).payload.username).isEqualTo("alice")
+    }
+
+    @Test
+    fun aRecordWithoutATypeIsMalformed() {
+        assertThatThrownBy { EventJson.typeOf("""{"payload":{}}""") }.isInstanceOf(IllegalArgumentException::class.java)
     }
 }
