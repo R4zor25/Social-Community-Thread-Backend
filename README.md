@@ -38,7 +38,7 @@ flowchart LR
 | `libs/common-web` | Auto-configuration shared by the services: resource server setup, the current user, `ProblemDetail` errors, paging. |
 | `libs/events` | Event contracts and the JSON fixtures that producer and consumer tests both use. |
 | `libs/user-projection` | The consumer side of `user-events`: the `user_projection` table, its migration, the listener and the dead-letter setup. |
-| `libs/test-support` | One shared set of Testcontainers (PostgreSQL, Kafka) for the integration tests. |
+| `libs/test-support` | The Testcontainers (PostgreSQL, Kafka) that every integration test uses, in the versions Compose runs. |
 | `build/parent`, `build/coverage` | Versions and plugins for every module, and the aggregated JaCoCo report. |
 
 ### Main design decisions
@@ -48,7 +48,7 @@ flowchart LR
 - **No trusted headers.** auth-service signs RS256 tokens (15 minutes, `iss`, `aud`, `kid`) and serves the public key at `/.well-known/jwks.json`, which the gateway does not route. The gateway and every service are OAuth2 resource servers and check the signature, expiry, issuer and audience themselves. When the key set cannot be fetched, the answer is `503`, not `401` or `500`.
 - **Sessions.** Each login creates a session with a 256-bit refresh token, stored only as its SHA-256 hash, valid for 7 days and rotated on every refresh. Presenting a used token again revokes all of that user's sessions. Logins are throttled: 5 failures per username or 20 per client address within 15 minutes give `429` with `Retry-After`. The gateway sets `X-Forwarded-For` to the address it was connected from, so a client cannot choose its own.
 - **Authorization next to the data.** For example, only a thread's creator may change it, only participants see a conversation, and only the recipient may accept a friend request. The caller always comes from the token, never from a path or body. Ids, authors, scores and timestamps in request bodies are ignored. Other users' email addresses are never returned.
-- **Consistent API.** Errors are RFC 7807 `ProblemDetail`s, with field errors on validation failures. Lists are paged (`?page=&size=`, default size 20, maximum 100) in a fixed order (`sort` gives `400`) and responses are assembled with one batch query per page instead of N+1 queries. Votes, follows, saves and adding participants are idempotent: `PUT` sets and `DELETE` clears. Concurrent votes are serialized with a row lock.
+- **Consistent API.** Errors are RFC 7807 `ProblemDetail`s, with field errors on validation failures. Lists are paged (`?page=&size=`, default size 20, maximum 100) in a fixed order (`sort` gives `400`) and responses are assembled with one batch query per page instead of N+1 queries. Votes, follows and saves are idempotent (`PUT` sets, `DELETE` clears), and adding someone who is already a participant changes nothing. Concurrent votes are serialized with a row lock.
 
 ## API
 
@@ -138,6 +138,8 @@ These are deliberate scope limits, not oversights:
 - **Topic settings are applied once.** auth-service creates `user-events` at startup, and Kafka does not change an existing topic's configuration. A changed partition count or retention has to be applied with the Kafka tools.
 - **One database server.** Compose runs one PostgreSQL instance for all four databases, with separate users and no cross-database access. The services know only their own connection settings, so separate servers need no code change.
 - **Polling outbox.** The outbox publisher polls the table. Change data capture (for example Debezium) would remove the polling delay.
+- **Dead letters are only collected.** Malformed events land on `user-events.DLT`, but nothing alerts on them or replays them yet.
+- **Account probing and lockout.** Registration says when an email address is already registered, and 5 failed logins lock a username for 15 minutes even for its owner. Both are deliberate trade-offs for clear errors and brute-force protection.
 - **Not covered.** Tracing, metrics, centralized logs, Kubernetes manifests and CORS (there is no browser client yet).
 
 ## From the 2023 version to this one
@@ -148,7 +150,7 @@ The 2023 version was a distributed monolith. Four services shared one database s
 - the services trusted a user id from the URL, so anyone could read and change anyone's data,
 - deleting a post cascaded to its author,
 - the refresh tokens were readable without authentication,
-- secrets were committed.
+- secrets were committed. They are still in the history, but none of them is used anymore: tokens are now signed with a generated RSA key, and every password comes from `.env`.
 
 I fixed those first, then rebuilt the system service by service around data ownership. The git history follows that path in thematic commits. The old design and every problem I found in it are described in [docs/architecture.md](docs/architecture.md#context) and in the commit messages.
 

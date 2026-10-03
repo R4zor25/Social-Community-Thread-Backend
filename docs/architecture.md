@@ -55,7 +55,7 @@ flowchart LR
 | `libs/common-web` | Shared web and security setup: resource-server configuration, current user, `ProblemDetail` errors, paging. |
 | `libs/events` | Event contracts (data classes and JSON fixtures) shared by the producer and the consumers. |
 | `libs/user-projection` | The consumer side of `user-events`: the `user_projection` table and its migration (`V1`, so service migrations start at `V2`), the listener, the dead-letter setup and the batch username lookup. |
-| `libs/test-support` | One set of Testcontainers (PostgreSQL, Kafka) with `@ServiceConnection`, shared by every service's integration tests. |
+| `libs/test-support` | The Testcontainers (PostgreSQL, Kafka) with `@ServiceConnection` that every integration test uses, with or without the `user-events` topics. |
 
 Service discovery and the config server are removed. In Compose the gateway reaches the services through Docker DNS names, and on a platform such as Kubernetes the platform provides discovery. All configuration comes from environment variables.
 
@@ -227,7 +227,7 @@ Every rebuilt service has tests for the problems found in the 2023 version that 
 - [x] Other users' email addresses never appear in a response.
 - [x] Public endpoints are matched exactly. Everything else requires a valid token, and a tampered, expired or foreign-signed token is rejected.
 - [x] A user cannot act as another user. There is no client-controlled identity anywhere.
-- [x] No duplicate votes, saves, friend requests, friendships or participants, also under concurrent requests.
+- [x] No duplicate votes, saves, friend requests, friendships or participants. Primary keys and unique indexes guarantee it; concurrent requests are tested for registrations, votes, friend requests and their answers, refreshes and leaving a conversation.
 
 ## Migration plan
 
@@ -240,7 +240,7 @@ The migration is complete. The 2023 services were not upgraded. They kept buildi
 | 3 | `feat(gateway)!: route the v2 API and validate tokens with JWKS` | The new gateway, plus the Compose rewrite. Removes `naming-server`, `config_service`, `cloud-configuration-repository` and `htmlReport/`. Adds the keys script, the auth part of the smoke test, the Java 21 Dockerfile, `.env.example` and the CI update. |
 | 4 | `feat(thread)!: rebuild thread-service with its own database` | Replaces `thread_service`, with its Compose entry and smoke-test steps. |
 | 5 | `feat(friend)!: rebuild friend-service with its own database` | Replaces `friend_service`. |
-| 6 | `feat(chat)!: rebuild chat-service with its own database` | Replaces `chat_service`. Removes `build/legacy-parent` and the old `common` module. |
+| 6 | `feat(chat)!: rebuild chat-service with its own database` | Replaces `chat_service`. A separate `build:` commit removes `build/legacy-parent` and the old `common` module. |
 | 7 | `ci: pin actions, add Dependabot and a coverage report` | |
 | 8 | `docs: rewrite the README for the new architecture` | |
 
