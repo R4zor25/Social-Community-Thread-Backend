@@ -18,7 +18,7 @@ class Containers {
 
     @Bean
     @ServiceConnection
-    fun postgres() = PostgreSQLContainer("postgres:16-alpine")
+    fun postgres() = PostgreSQLContainer("postgres:18-alpine")
 
     @Bean
     @ServiceConnection

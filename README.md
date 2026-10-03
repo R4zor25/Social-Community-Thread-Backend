@@ -121,7 +121,7 @@ CI (GitHub Actions) runs `./mvnw verify`, uploads the aggregated JaCoCo report a
 
 - Kotlin 2.2, Java 21, Spring Boot 4.0, Spring Cloud 2025.1 (Gateway Server WebFlux)
 - Spring Security OAuth2 resource server, Nimbus JOSE (RS256, JWKS)
-- Spring Data JPA, Flyway, PostgreSQL 16
+- Spring Data JPA, Flyway, PostgreSQL 18
 - Spring for Apache Kafka, Kafka 4 (KRaft)
 - springdoc-openapi
 - JUnit, MockK, AssertJ, Testcontainers, JaCoCo
