@@ -13,8 +13,8 @@ trap 'rm -f "$BODY"' EXIT
 # Prints the status code; the response body is left in $BODY.
 request() { curl -s -o "$BODY" -w '%{http_code}' "$@"; }
 json() { curl -s -H 'Content-Type: application/json' "$@"; }
-# The first occurrence of a top-level-looking field; good enough for the flat checks below.
-field() { grep -o "\"$1\":\"\{0,1\}[^,\"}]*" "$BODY" | head -1 | sed "s/^\"$1\":\"\{0,1\}//"; }
+# The first occurrence of a top-level-looking field, or nothing; good enough for the flat checks below.
+field() { { grep -o "\"$1\":\"\{0,1\}[^,\"}]*" "$BODY" || true; } | head -1 | sed "s/^\"$1\":\"\{0,1\}//"; }
 
 expect() {
   local description="$1" expected="$2" actual="$3"
