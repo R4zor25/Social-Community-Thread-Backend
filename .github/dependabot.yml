@@ -4,6 +4,13 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Spring Cloud 2025.1 is the release train for Spring Boot 4.0; move to Boot 4.1 together with Spring Cloud 2026.0.
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # springdoc 3.1 is built on Spring Boot 4.1.
+      - dependency-name: "org.springdoc:*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -12,6 +19,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # The services target Java 21, the current LTS they are built for; a Java upgrade is a deliberate change.
+      - dependency-name: eclipse-temurin
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker-compose
     directory: /
     schedule:
